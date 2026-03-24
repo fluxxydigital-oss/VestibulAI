@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 // CONSTANTS
 // =====================================================
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || "your-secret-key";
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "your-secret-key";
 const JWT_EXPIRATION = parseInt(process.env.JWT_EXPIRATION || "86400"); // 24 hours
 const REFRESH_TOKEN_EXPIRATION = parseInt(
   process.env.REFRESH_TOKEN_EXPIRATION || "2592000"
