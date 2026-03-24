@@ -358,9 +358,9 @@ export default function DashboardPage() {
                     <div className="font-bold text-foreground text-lg">Biologia: Genética (Leis de Mendel)</div>
                     <div className="text-sm text-muted-foreground mt-1 mb-3">Assistir vídeo-aula 04 e resolver a lista de aprofundamento.</div>
                     <div className="flex gap-2">
-                       <Button size="sm" className="w-full" asChild>
-                         <Link href="/dashboard/trilha">Continuar Estudando</Link>
-                       </Button>
+                       <Link href="/dashboard/trilha" className="w-full">
+                         <Button size="sm" className="w-full">Continuar Estudando</Button>
+                       </Link>
                      </div>
                   </div>
                 </div>
