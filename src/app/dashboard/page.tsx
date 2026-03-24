@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, BookOpen, BrainCircuit, Target, CheckCircle2, Clock, CalendarDays, Flame, Trophy, TrendingUp, AlertCircle, PlayCircle, PauseCircle, LogOut } from "lucide-react";
+import { BarChart3, BookOpen, BrainCircuit, Target, CheckCircle2, Clock, CalendarDays, Flame, Trophy, TrendingUp, AlertCircle, PlayCircle, PauseCircle, LogOut, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -270,15 +270,26 @@ export default function DashboardPage() {
              <CardContent className="relative z-10">
                <div className="text-3xl font-black font-mono text-primary tracking-tight">{formatTime(studySeconds)}</div>
                <p className="text-xs text-muted-foreground font-medium mb-3 mt-1">Em foco: Matemática</p>
-               <Button 
-                size="sm" 
-                variant={isTimerRunning ? "secondary" : "default"}
-                className={`w-full text-xs font-bold gap-2 ${isTimerRunning ? "bg-primary/20 hover:bg-primary/30 text-primary" : ""}`}
-                onClick={() => setIsTimerRunning(!isTimerRunning)}
-               >
-                 {isTimerRunning ? <PauseCircle className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
-                 {isTimerRunning ? "Pausar Estudo" : "Retomar Estudo"}
-               </Button>
+                <div className="flex gap-2">
+                  <Button 
+                   size="sm" 
+                   variant={isTimerRunning ? "secondary" : "default"}
+                   className={`flex-1 text-xs font-bold gap-2 ${isTimerRunning ? "bg-primary/20 hover:bg-primary/30 text-primary" : ""}`}
+                   onClick={() => setIsTimerRunning(!isTimerRunning)}
+                  >
+                    {isTimerRunning ? <PauseCircle className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
+                    {isTimerRunning ? "Pausar" : "Retomar"}
+                  </Button>
+                  <Button 
+                   size="sm" 
+                   variant="outline"
+                   className="text-xs font-bold gap-1 text-muted-foreground hover:text-destructive hover:border-destructive/50"
+                   onClick={() => { setIsTimerRunning(false); setStudySeconds(0); }}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    Resetar
+                  </Button>
+                </div>
              </CardContent>
            </Card>
 
