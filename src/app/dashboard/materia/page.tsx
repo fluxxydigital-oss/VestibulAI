@@ -1,26 +1,59 @@
 "use client"
 
+import { useState, useEffect } from "react";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Search, Filter, BookOpen, Calculator, Globe, Atom, FlaskConical, Users, Languages, ChevronRight } from "lucide-react";
+import { Search, Filter, BookOpen, Calculator, Globe, Atom, FlaskConical, Users, Languages, ChevronRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
-const SUBJECTS = [
-  { id: 1, name: "Matemática", icon: <Calculator className="h-5 w-5" />, color: "bg-blue-500", progress: 65, lessons: 120, area: "Exatas" },
-  { id: 2, name: "Biologia", icon: <FlaskConical className="h-5 w-5" />, color: "bg-green-500", progress: 42, lessons: 95, area: "Biológicas" },
-  { id: 3, name: "Física", icon: <Atom className="h-5 w-5" />, color: "bg-purple-500", progress: 28, lessons: 110, area: "Exatas" },
-  { id: 4, name: "Português", icon: <Languages className="h-5 w-5" />, color: "bg-red-500", progress: 85, lessons: 85, area: "Linguagens" },
-  { id: 5, name: "História", icon: <Users className="h-5 w-5" />, color: "bg-orange-500", progress: 55, lessons: 90, area: "Humanas" },
-  { id: 6, name: "Geografia", icon: <Globe className="h-5 w-5" />, color: "bg-cyan-500", progress: 38, lessons: 80, area: "Humanas" },
-  { id: 7, name: "Química", icon: <FlaskConical className="h-5 w-5" />, color: "bg-teal-500", progress: 15, lessons: 105, area: "Exatas" },
-  { id: 8, name: "Literatura", icon: <BookOpen className="h-5 w-5" />, color: "bg-pink-500", progress: 92, lessons: 60, area: "Linguagens" },
-];
+type SubjectData = {
+  id: string;
+  name: string;
+  description: string;
+  area: string;
+  progress: number;
+  lessons: number;
+  lastActivity: string | null;
+};
+
+const iconMap: Record<string, React.ReactNode> = {
+  'Exatas': <Calculator className="h-5 w-5" />,
+  'Biológicas': <FlaskConical className="h-5 w-5" />,
+  'Humanas': <Globe className="h-5 w-5" />,
+  'Linguagens': <Languages className="h-5 w-5" />,
+};
+
+const colorMap: Record<string, string> = {
+  'Exatas': 'bg-blue-500',
+  'Biológicas': 'bg-green-500',
+  'Humanas': 'bg-orange-500',
+  'Linguagens': 'bg-red-500',
+};
 
 export default function MateriaPage() {
+  const [subjects, setSubjects] = useState<SubjectData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeArea, setActiveArea] = useState("Todas");
+
+  useEffect(() => {
+    fetch('/api/materias')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setSubjects(data.data.materias);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch materias", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const filteredSubjects = activeArea === "Todas" ? subjects : subjects.filter(s => s.area === activeArea);
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <DashboardHeader />
@@ -52,10 +85,11 @@ export default function MateriaPage() {
           {["Todas", "Exatas", "Humanas", "Biológicas", "Linguagens"].map((area, i) => (
             <Badge 
               key={i} 
-              variant={i === 0 ? "default" : "outline"} 
+              variant={area === activeArea ? "default" : "outline"} 
+              onClick={() => setActiveArea(area)}
               className={cn(
                 "px-4 py-1.5 rounded-full cursor-pointer text-xs font-bold uppercase tracking-wider transition-all",
-                i === 0 ? "bg-primary shadow-lg shadow-primary/20" : "hover:bg-muted"
+                area === activeArea ? "bg-primary shadow-lg shadow-primary/20" : "hover:bg-muted"
               )}
             >
               {area}
@@ -64,46 +98,57 @@ export default function MateriaPage() {
         </div>
 
         {/* Subjects Grid */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {SUBJECTS.map((subject) => (
-            <Card key={subject.id} className="group border-border/50 overflow-hidden hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 transform hover:-translate-y-1">
-              <CardHeader className="pb-3 border-b border-border/40">
-                <div className="flex items-center justify-between mb-2">
-                  <div className={cn("p-2 rounded-lg text-white shadow-lg", subject.color)}>
-                    {subject.icon}
+        {loading ? (
+          <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {filteredSubjects.map((subject) => {
+              const color = colorMap[subject.area] || 'bg-gray-500';
+              const icon = iconMap[subject.area] || <BookOpen className="h-5 w-5" />;
+              
+              return (
+              <Card key={subject.id} className="group border-border/50 overflow-hidden hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 transform hover:-translate-y-1">
+                <CardHeader className="pb-3 border-b border-border/40">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className={cn("p-2 rounded-lg text-white shadow-lg", color)}>
+                      {icon}
+                    </div>
+                    <Badge variant="secondary" className="text-[10px] font-bold uppercase opacity-80">{subject.area}</Badge>
                   </div>
-                  <Badge variant="secondary" className="text-[10px] font-bold uppercase opacity-80">{subject.area}</Badge>
-                </div>
-                <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">{subject.name}</CardTitle>
-                <CardDescription className="text-xs">{subject.lessons} aulas disponíveis</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-muted-foreground uppercase tracking-wider">Progresso Atual</span>
-                    <span className="text-foreground">{subject.progress}%</span>
+                  <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">{subject.name}</CardTitle>
+                  <CardDescription className="text-xs">{subject.lessons} aulas disponíveis</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-muted-foreground uppercase tracking-wider">Progresso Atual</span>
+                      <span className="text-foreground">{subject.progress}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className={cn("h-full transition-all duration-1000 ease-out rounded-full", color.replace('bg-', 'bg-opacity-80 bg-'))}
+                        style={{ width: `${subject.progress}%` }}
+                      ></div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground italic">
+                      <BookOpen className="h-3 w-3" />
+                      Último estudo: {subject.lastActivity ? new Date(subject.lastActivity).toLocaleDateString('pt-BR') : 'Nunca iniciada'}
+                    </div>
                   </div>
-                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className={cn("h-full transition-all duration-1000 ease-out rounded-full", subject.color.replace('bg-', 'bg-opacity-80 bg-'))}
-                      style={{ width: `${subject.progress}%` }}
-                    ></div>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground italic">
-                    <BookOpen className="h-3 w-3" />
-                    Último estudo: Ontem
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="pt-0 border-t border-transparent group-hover:bg-primary/5 transition-colors">
-                <Button variant="ghost" className="w-full justify-between font-bold group-hover:text-primary p-0 h-12">
-                   Entrar na Disciplina
-                   <ChevronRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+                <CardFooter className="pt-0 border-t border-transparent group-hover:bg-primary/5 transition-colors">
+                  <Link href={`/dashboard/materia/${subject.id}`} className="w-full">
+                    <Button variant="ghost" className="w-full justify-between font-bold group-hover:text-primary p-0 h-12">
+                       Entrar na Disciplina
+                       <ChevronRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+              );
+            })}
+          </div>
+        )}
       </main>
     </div>
   );

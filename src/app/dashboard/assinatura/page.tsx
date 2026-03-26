@@ -1,14 +1,34 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { BrainCircuit, ArrowLeft, CreditCard, Check, Zap, Clock, ShieldCheck, ExternalLink } from "lucide-react";
+import { BrainCircuit, ArrowLeft, CreditCard, Check, Zap, Clock, ShieldCheck, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
+import { useAuth } from "@/lib/hooks";
 
 export default function SubscriptionPage() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleCheckout = async (planName: string) => {
+    setLoading(planName);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planName })
+      });
+      if (res.ok) {
+        alert("Assinatura ativada com sucesso! Bem-vindo(a) ao seu novo plano.");
+        window.location.reload();
+      }
+    } finally {
+      setLoading(null);
+    }
+  };
   const features = [
     "Banco com +150.000 questões",
     "Correção de redação ilimitada por IA",
@@ -163,8 +183,13 @@ export default function SubscriptionPage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button variant={plan.current ? "secondary" : "outline"} className={`w-full ${plan.current ? 'cursor-default opacity-80' : ''}`} disabled={plan.current}>
-                    {plan.buttonText}
+                  <Button 
+                    variant={plan.current ? "secondary" : "outline"} 
+                    className={`w-full ${plan.current ? 'cursor-default opacity-80' : ''}`} 
+                    disabled={plan.current || !!loading}
+                    onClick={() => handleCheckout(plan.name)}
+                  >
+                    {loading === plan.name ? <Loader2 className="h-4 w-4 animate-spin" /> : plan.buttonText}
                   </Button>
                 </CardFooter>
               </Card>

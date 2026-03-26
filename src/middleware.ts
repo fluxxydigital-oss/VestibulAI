@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key';
 
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = [
@@ -14,18 +11,6 @@ const PUBLIC_ROUTES = [
   '/banco-de-questoes',
   '/planos',
 ];
-
-/**
- * Verify JWT token from cookies
- */
-function verifyToken(token: string): boolean {
-  try {
-    jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
 
 /**
  * Check if route is public
@@ -49,7 +34,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // For protected routes, verify authentication
+  // For protected routes, verify authentication presence
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/correcao-de-redacao')) {
     const authToken = request.cookies.get('auth_token')?.value;
 
@@ -58,12 +43,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Token is invalid, redirect to login
-    if (!verifyToken(authToken)) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    // Token is valid, allow request
+    // Token is present, let the downstream APIs/Pages verify its validity
     return NextResponse.next();
   }
 

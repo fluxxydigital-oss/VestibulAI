@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, BookOpen, BrainCircuit, Target, CheckCircle2, Clock, CalendarDays, Flame, Trophy, TrendingUp, AlertCircle, PlayCircle, PauseCircle, LogOut, RotateCcw } from "lucide-react";
+import { BarChart3, BookOpen, BrainCircuit, Target, CheckCircle2, Clock, CalendarDays, Flame, Trophy, TrendingUp, AlertCircle, PlayCircle, PauseCircle, LogOut, RotateCcw, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,14 +22,74 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, Settings, CreditCard, LifeBuoy } from "lucide-react";
 
+// Component Interfaces
+interface StudyPlan {
+  id: string;
+  title: string;
+  type: string;
+  xpReward: number;
+  date: string;
+  durationMin: number;
+  status: 'PENDING' | 'COMPLETED' | 'MISSED';
+  subject: { name: string };
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
+  // Trilha State
+  const [todayMissions, setTodayMissions] = useState<StudyPlan[]>([]);
+  const [loadingMissions, setLoadingMissions] = useState(true);
+
   // Timer State
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [studySeconds, setStudySeconds] = useState(8130); // Starts at 02:15:30 for demo purposes
+  const [studySeconds, setStudySeconds] = useState(0); // Resets timer to 0
+
+  // Fetch Missions
+  useEffect(() => {
+    async function fetchMissions() {
+      if (!user) return;
+      try {
+        const res = await fetch('/api/trilha');
+        const data = await res.json();
+        if (data.success && data.data?.trilha) {
+          const allMissions: StudyPlan[] = data.data.trilha;
+          const today = new Date().toISOString().split('T')[0];
+          
+          const todays = allMissions.filter(m => {
+             const mDate = new Date(m.date).toISOString().split('T')[0];
+             return mDate === today;
+          });
+          setTodayMissions(todays);
+        }
+      } catch (err) {
+        console.error("Failed to load missions", err);
+      } finally {
+        setLoadingMissions(false);
+      }
+    }
+    fetchMissions();
+  }, [user]);
+
+  // Dynamic ENEM/Target countdown
+  let daysToEnem = 180; // default safe fallback
+  if (user?.targetDate) {
+    const today = new Date();
+    const target = new Date(user.targetDate);
+    // Adicionando um pequeno fuso compensatório se necessário, ou usar UTC
+    const diffTime = target.getTime() - today.getTime();
+    daysToEnem = Math.ceil(diffTime / (1000 * 3600 * 24));
+  } else {
+    const today = new Date();
+    let nextEnemYear = today.getFullYear();
+    if (today.getMonth() > 10 || (today.getMonth() === 10 && today.getDate() > 10)) {
+      nextEnemYear++;
+    }
+    const nextEnemDate = new Date(nextEnemYear, 10, 10);
+    daysToEnem = Math.ceil((nextEnemDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+  }
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -120,8 +180,8 @@ export default function DashboardPage() {
           
             <div className="flex items-center gap-3">
               <div className="hidden md:flex flex-col items-end">
-                <span className="text-xs font-bold text-primary">Nível 12</span>
-                <span className="text-[10px] text-muted-foreground">350/500 XP</span>
+                <span className="text-xs font-bold text-primary">Nível {Math.floor((user?.xp || 0) / 100) + 1}</span>
+                <span className="text-[10px] text-muted-foreground">{user?.xp || 0}/{(Math.floor((user?.xp || 0) / 100) + 1) * 100} XP</span>
               </div>
               
               <DropdownMenu>
@@ -132,7 +192,7 @@ export default function DashboardPage() {
                       {user?.name?.split(' ').filter(Boolean).map(n => n[0]).join('') || user?.email?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>
                     <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-2 ring-background z-10">
-                      12
+                      {Math.floor((user?.xp || 0) / 100) + 1}
                     </span>
                   </Avatar>
                 </DropdownMenuTrigger>
@@ -215,14 +275,14 @@ export default function DashboardPage() {
               </Badge>
               <div className="flex items-center gap-2 text-sm text-foreground/80 font-medium bg-muted/50 px-3 py-1.5 rounded-full border">
                 <Target className="h-4 w-4 text-primary" />
-                Meta: Medicina UFRJ
+                Meta: {user?.targetCourse || "Não definida"}
               </div>
             </div>
           </div>
           
           <div className="w-full md:w-auto flex flex-col items-center justify-center bg-muted/40 p-4 rounded-xl border border-border/40 min-w-[200px]">
              <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600 mb-1">
-               180
+               {daysToEnem}
              </div>
              <div className="text-sm font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                <CalendarDays className="h-4 w-4" /> Dias p/ ENEM
@@ -238,9 +298,9 @@ export default function DashboardPage() {
                <Trophy className="h-4 w-4 text-primary/80" />
              </CardHeader>
              <CardContent>
-               <div className="text-2xl font-bold">350 <span className="text-sm font-normal text-muted-foreground">/ 500 para Nvl 13</span></div>
-               <Progress value={70} className="mt-3 h-2" />
-               <p className="text-xs text-muted-foreground mt-2">+45 XP ganhos hoje</p>
+               <div className="text-2xl font-bold">{user?.xp || 0} <span className="text-sm font-normal text-muted-foreground">/ {(Math.floor((user?.xp || 0) / 100) + 1) * 100} para Nvl {Math.floor((user?.xp || 0) / 100) + 2}</span></div>
+               <Progress value={((user?.xp || 0) % 100)} className="mt-3 h-2" />
+               <p className="text-xs text-muted-foreground mt-2">+0 XP ganhos hoje</p>
              </CardContent>
            </Card>
 
@@ -251,12 +311,12 @@ export default function DashboardPage() {
              </CardHeader>
              <CardContent>
                <div className="flex items-end gap-2">
-                 <div className="text-2xl font-bold">24</div>
+                 <div className="text-2xl font-bold">0</div>
                  <span className="text-sm text-muted-foreground pb-1">/ 30 meta</span>
                </div>
-               <Progress value={80} className="mt-3 h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-green-500" />
+               <Progress value={0} className="mt-3 h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-green-500" />
                <p className="text-xs text-muted-foreground mt-2 font-medium">
-                 <span className="text-green-500">83% de Acerto</span> (Ótimo!)
+                 <span className="text-muted-foreground">0% de Acerto</span> (Sem dados)
                </p>
              </CardContent>
            </Card>
@@ -269,8 +329,7 @@ export default function DashboardPage() {
              </CardHeader>
              <CardContent className="relative z-10">
                <div className="text-3xl font-black font-mono text-primary tracking-tight">{formatTime(studySeconds)}</div>
-               <p className="text-xs text-muted-foreground font-medium mb-3 mt-1">Em foco: Matemática</p>
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-4">
                   <Button 
                    size="sm" 
                    variant={isTimerRunning ? "secondary" : "default"}
@@ -299,11 +358,11 @@ export default function DashboardPage() {
                <TrendingUp className="h-4 w-4 text-purple-500" />
              </CardHeader>
              <CardContent>
-               <div className="text-2xl font-bold">Top 15%</div>
-               <p className="text-xs text-muted-foreground mt-1 mb-2">Simulados UFRJ (+2%)</p>
+               <div className="text-2xl font-bold">Iniciante</div>
+               <p className="text-xs text-muted-foreground mt-1 mb-2">Sem simulados recentes</p>
                <div className="flex gap-1 mt-2">
                  {[1,2,3,4,5,6,7].map((day, i) => (
-                   <div key={i} className={`h-6 w-full rounded-sm ${i > 4 ? 'bg-muted' : (i === 3 ? 'bg-orange-500' : 'bg-green-500/80')}`} title={`Dia ${day}`}></div>
+                   <div key={i} className={`h-6 w-full rounded-sm bg-muted`} title={`Dia ${day}`}></div>
                  ))}
                </div>
              </CardContent>
@@ -322,74 +381,77 @@ export default function DashboardPage() {
                     <CalendarDays className="h-5 w-5 text-primary" /> Missões de Hoje
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    Complete as tarefas para ganhar bônus de XP diário.
+                    Suas tarefas agendadas para o dia.
                   </CardDescription>
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-bold text-primary">2/4</span>
+                  <span className="text-sm font-bold text-primary">{todayMissions.filter(m => m.status === 'COMPLETED').length}/{todayMissions.length}</span>
                   <p className="text-xs text-muted-foreground">Concluídas</p>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="flex-1 p-0">
-              <div className="relative p-6 space-y-8 before:absolute before:inset-0 before:ml-10 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
-                
-                {/* Task 1 - Completed */}
-                <div className="relative flex items-start md:items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  <div className="hidden md:flex flex-col items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-green-500 text-white shadow shrink-0 md:order-1 transition-transform group-hover:scale-110 z-10">
-                    <CheckCircle2 className="h-5 w-5" />
-                  </div>
-                  <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-green-500 text-white shadow shrink-0 md:hidden z-10 absolute -left-[20px] top-0">
-                     <CheckCircle2 className="h-5 w-5" />
-                  </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-card border border-green-500/30 rounded-xl p-4 shadow-sm opacity-60">
-                    <div className="flex items-center justify-between mb-2">
-                       <time className="text-xs font-semibold uppercase text-green-600 dark:text-green-500 flex items-center gap-1"><Clock className="h-3 w-3" /> 08:00 - 09:30</time>
-                       <span className="text-xs font-bold text-muted-foreground">+50 XP</span>
-                    </div>
-                    <div className="font-bold text-foreground">Matemática: Funções Básicas</div>
-                    <div className="text-sm text-muted-foreground mt-1">Revisão do módulo 2 + 10 exercícios de fixação.</div>
-                  </div>
-                </div>
+              {loadingMissions ? (
+                 <div className="p-12 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+              ) : todayMissions.length === 0 ? (
+                 <div className="relative p-6 space-y-8 min-h-[200px] flex items-center justify-center">
+                   <div className="text-center text-muted-foreground w-full">
+                     <CalendarDays className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                     <p className="font-medium">Nenhuma missão agendada.</p>
+                     <p className="text-sm opacity-80 mt-1">Gere sua trilha formatada por IA acessando o menu lateral!</p>
+                     <Link href="/dashboard/trilha">
+                       <Button variant="outline" className="mt-4">
+                          Gerar Trilha de Estudos
+                       </Button>
+                     </Link>
+                   </div>
+                 </div>
+              ) : (
+                <div className="relative p-6 space-y-6 before:absolute before:inset-0 before:ml-10 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
+                  {todayMissions.map((task, idx) => (
+                    <div key={task.id} className="relative flex items-start md:items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                      
+                      {/* Icon */}
+                      <div className={`hidden md:flex flex-col items-center justify-center w-10 h-10 rounded-full border-4 border-background shadow shrink-0 md:order-1 z-10 
+                          ${task.status === 'COMPLETED' ? 'bg-green-500 text-white' : task.status === 'PENDING' ? 'bg-primary text-primary-foreground ring-4 ring-primary/20 animate-pulse' : 'bg-muted text-muted-foreground'}`}>
+                        {task.status === 'COMPLETED' ? <CheckCircle2 className="h-5 w-5" /> : task.status === 'PENDING' ? <Flame className="h-5 w-5" /> : <div className="w-2 h-2 rounded-full bg-border"></div>}
+                      </div>
+                      
+                      {/* Mobile Icon */}
+                      <div className={`flex flex-col items-center justify-center w-10 h-10 rounded-full border-4 border-background shadow shrink-0 md:hidden z-10 absolute -left-[20px] top-0 
+                         ${task.status === 'COMPLETED' ? 'bg-green-500 text-white' : task.status === 'PENDING' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                        {task.status === 'COMPLETED' ? <CheckCircle2 className="h-5 w-5" /> : task.status === 'PENDING' ? <Flame className="h-5 w-5" /> : <div className="w-2 h-2 rounded-full bg-border"></div>}
+                      </div>
 
-                {/* Task 2 - Active */}
-                <div className="relative flex items-start md:items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  <div className="hidden md:flex flex-col items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-primary shadow-lg shrink-0 md:order-1 transition-transform group-hover:scale-110 z-10 ring-4 ring-primary/20 animate-pulse">
-                    <Flame className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                   <div className="flex flex-col items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-primary shadow shrink-0 md:hidden z-10 absolute -left-[20px] top-0">
-                     <Flame className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-primary/5 border border-primary/30 rounded-xl p-4 shadow-md relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-2 h-full bg-primary"></div>
-                    <div className="flex items-center justify-between mb-2">
-                       <time className="text-xs font-bold uppercase text-primary flex items-center gap-1"><Clock className="h-3 w-3" /> 10:00 - 11:30</time>
-                       <span className="text-xs font-bold text-primary">+80 XP</span>
+                      {/* Content Card */}
+                      <div className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] rounded-xl p-4 shadow-sm border
+                        ${task.status === 'COMPLETED' ? 'bg-card border-green-500/30 opacity-60' : task.status === 'PENDING' ? 'bg-primary/5 border-primary/30 relative overflow-hidden' : 'bg-card border-border/50'}`}>
+                        
+                        {task.status === 'PENDING' && <div className="absolute top-0 right-0 w-2 h-full bg-primary"></div>}
+                        
+                        <div className="flex items-center justify-between mb-2">
+                           <time className={`text-xs font-semibold uppercase flex items-center gap-1 ${task.status === 'COMPLETED' ? 'text-green-600' : task.status === 'PENDING' ? 'text-primary' : 'text-muted-foreground'}`}>
+                              <Clock className="h-3 w-3" /> {task.durationMin} min
+                           </time>
+                           <span className={`text-xs font-bold ${task.status === 'PENDING' ? 'text-primary' : 'text-muted-foreground'}`}>+{task.xpReward} XP</span>
+                        </div>
+                        
+                        <div className={`font-bold ${task.status === 'PENDING' ? 'text-lg text-foreground' : 'text-foreground'}`}>
+                           {task.subject.name}: {task.title}
+                        </div>
+                        
+                        {task.status === 'PENDING' && (
+                          <div className="flex gap-2 mt-4">
+                             <Link href="/dashboard/trilha" className="w-full">
+                               <Button size="sm" className="w-full">Ir para a Trilha</Button>
+                             </Link>
+                           </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="font-bold text-foreground text-lg">Biologia: Genética (Leis de Mendel)</div>
-                    <div className="text-sm text-muted-foreground mt-1 mb-3">Assistir vídeo-aula 04 e resolver a lista de aprofundamento.</div>
-                    <div className="flex gap-2">
-                       <Link href="/dashboard/trilha" className="w-full">
-                         <Button size="sm" className="w-full">Continuar Estudando</Button>
-                       </Link>
-                     </div>
-                  </div>
+                  ))}
                 </div>
-
-                {/* Task 3 - Pending */}
-                <div className="relative flex items-start md:items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                  <div className="hidden md:flex w-8 h-8 rounded-full border-4 border-background bg-muted shadow shrink-0 md:order-1 md:ml-1 md:-mr-1 z-10"></div>
-                  <div className="flex w-6 h-6 rounded-full border-4 border-background bg-muted shrink-0 md:hidden z-10 absolute -left-[12px] top-4"></div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-card border border-border/50 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                       <time className="text-xs font-semibold uppercase text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> 14:00 - 16:00</time>
-                    </div>
-                    <div className="font-bold text-foreground">Redação Semanal</div>
-                    <div className="text-sm text-muted-foreground mt-1">Tema surpresa focado em atualidades para o ENEM.</div>
-                  </div>
-                </div>
-
-              </div>
+              )}
             </CardContent>
           </Card>
           
@@ -436,26 +498,40 @@ export default function DashboardPage() {
                   <Trophy className="h-5 w-5 text-yellow-500" /> Conquistas Recentes
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4 space-y-3">
-                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-default">
-                  <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0 border border-yellow-500/30 shadow-inner">
-                    <span className="text-xl">🔥</span>
+                {user && (user.xp || 0) >= 100 ? (
+                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-default">
+                    <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center shrink-0 border border-yellow-500/30 shadow-inner">
+                      <span className="text-xl">⭐</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold">Primeiro Passo</h4>
+                      <p className="text-[10px] text-muted-foreground">Alcançou 100 de Experiência (XP).</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold">14 Dias Focados</h4>
-                    <p className="text-[10px] text-muted-foreground">Ofensiva mantida por 2 semanas.</p>
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                     <p className="text-sm">Nenhuma conquista ainda.</p>
+                     <p className="text-xs opacity-70 mt-1">Complete missões para desbloquear!</p>
                   </div>
+                )}
+                
+                {user && (user.xp || 0) >= 500 && (
+                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-default">
+                    <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/30 shadow-inner">
+                      <span className="text-xl">🏃‍♂️</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold">Iniciante Focado</h4>
+                      <p className="text-[10px] text-muted-foreground">Ultrapassou a marca de 500 XP.</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-border/40 mt-2">
+                  <Link href="/dashboard/conquistas" className="text-xs text-primary font-bold w-full text-center hover:underline block py-1">
+                    Ver Galeria de Conquistas →
+                  </Link>
                 </div>
-                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-default">
-                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-500/30 shadow-inner">
-                    <span className="text-xl">🧮</span>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold">Mestre dos Números</h4>
-                    <p className="text-[10px] text-muted-foreground">Terminou módulo de Matemática.</p>
-                  </div>
-                </div>
-              </CardContent>
             </Card>
 
           </div>

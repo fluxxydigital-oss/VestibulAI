@@ -25,7 +25,9 @@ export interface User {
   name: string | null;
   email: string;
   targetCourse?: string;
+  targetDate?: string;
   plan?: 'FREE' | 'PRO' | 'PREMIUM';
+  xp?: number;
 }
 
 export interface AuthResponse {

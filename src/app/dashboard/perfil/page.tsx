@@ -18,6 +18,7 @@ import {
   Camera, 
   ChevronRight,
   GraduationCap,
+  Loader2,
   Sun,
   Moon,
   Monitor,
@@ -36,6 +37,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const [saving, setSaving] = useState(false);
   
   // Real subscription type mapped to the UI types
   const subscriptionType: 'free' | 'complete' | 'premium' = user?.plan?.toLowerCase() === 'pro' ? 'complete' : (user?.plan?.toLowerCase() as any || "free");
@@ -48,7 +50,6 @@ export default function ProfilePage() {
   // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
-    // Check if reduced animations class is present
     setReduceAnimations(document.body.classList.contains("reduce-animations"));
   }, []);
 
@@ -117,6 +118,16 @@ export default function ProfilePage() {
     setBirthDate(value);
   };
 
+  const [fullName, setFullName] = useState(user?.name || "");
+  const [targetCourseState, setTargetCourse] = useState(user?.targetCourse || "");
+
+  useEffect(() => {
+     if (user) {
+        setFullName(user.name || "");
+        setTargetCourse(user.targetCourse || "");
+     }
+  }, [user]);
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.slice(0, 11);
@@ -130,6 +141,31 @@ export default function ProfilePage() {
     }
     
     setPhone(value);
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: fullName,
+          targetCourse: targetCourseState,
+          phone,
+          birthDate
+        })
+      });
+      if (!res.ok) throw new Error("Erro ao salvar perfil");
+      alert("Perfil atualizado com sucesso!");
+    } catch (e) {
+      console.error(e);
+      alert("Falha ao salvar o perfil.");
+    } finally {
+      setSaving(false);
+    }
   };
 
 
@@ -261,8 +297,8 @@ export default function ProfilePage() {
                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Nome Completo</label>
                   <input 
                     type="text" 
-                    key={user?.name || "name"}
-                    defaultValue={user?.name || ""} 
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-border/60 bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium"
                   />
                 </div>
@@ -325,17 +361,15 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Vestibular de Preferência</label>
-                    <select className="w-full px-4 py-3 rounded-xl border border-border/60 bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium appearance-none">
-                      <option>ENEM</option>
-                      <option>FUVEST</option>
-                      <option>UNICAMP</option>
-                      <option>UNESP</option>
-                      <option>UFRJ</option>
-                      <option>UFMG</option>
-                      <option>UERJ</option>
-                      <option>Outros</option>
-                    </select>
+                    <input 
+                      type="text"
+                      className="w-full px-4 py-3 rounded-xl border border-border/60 bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-medium"
+                      placeholder="Ex: Medicina USP"
+                      value={targetCourseState}
+                      onChange={(e) => setTargetCourse(e.target.value)}
+                    />
                   </div>
+
                 </div>
 
               </CardContent>
@@ -405,9 +439,13 @@ export default function ProfilePage() {
             <div className="border-t border-border/50 pt-6 space-y-4">
               <div className="flex flex-col sm:flex-row justify-end gap-3 pb-4 border-b border-border/50">
                 <Button variant="ghost" className="h-12 px-8 font-bold" render={<Link href="/dashboard" />}>Descartar Alterações</Button>
-                <Button className="h-12 px-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 gap-2 font-bold text-base transition-all hover:scale-[1.02] active:scale-[0.98]">
-                  <Save className="h-5 w-5" />
-                  Salvar Meu Perfil
+                <Button 
+                   onClick={handleSaveProfile} 
+                   disabled={saving}
+                   className="h-12 px-10 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 gap-2 font-bold text-base transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
+                  {saving ? 'Salvando...' : 'Salvar Meu Perfil'}
                 </Button>
               </div>
               

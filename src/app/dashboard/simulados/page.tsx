@@ -1,62 +1,55 @@
 "use client"
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlayCircle, Award, BarChart3, Clock, AlertTriangle, CheckCircle2, Star, Zap } from "lucide-react";
+import { PlayCircle, Award, BarChart3, Clock, AlertTriangle, CheckCircle2, Star, Zap, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-const SIMULADOS = [
-  { 
-    id: 1, 
-    name: "ENEM 2024 - Mock 01", 
-    type: "Geral", 
-    questions: 180, 
-    time: "5h 30min", 
-    diff: "Médio", 
-    xp: 2500,
-    status: "available",
-    accent: "border-primary/50 text-primary"
-  },
-  { 
-    id: 2, 
-    name: "FUVEST 1ª Fase 2024", 
-    type: "Completo", 
-    questions: 90, 
-    time: "5h", 
-    diff: "Difícil", 
-    xp: 3200,
-    status: "vailale",
-    accent: "border-purple-500 text-purple-500"
-  },
-  { 
-    id: 3, 
-    name: "Minisimulado: Humanas", 
-    type: "Pocket", 
-    questions: 24, 
-    time: "45min", 
-    diff: "Fácil", 
-    xp: 800,
-    status: "completed",
-    score: 840,
-    accent: "border-orange-500 text-orange-500"
-  },
-  { 
-    id: 4, 
-    name: "ENEM 2023 - Prova Real", 
-    type: "Histórico", 
-    questions: 180, 
-    time: "5h 30min", 
-    diff: "Oficial", 
-    xp: 4000,
-    status: "available",
-    accent: "border-blue-500 text-blue-500"
-  }
-];
-
 export default function SimuladosPage() {
+  const router = useRouter();
+  const [exams, setExams] = useState<any[]>([]);
+  const [stats, setStats] = useState({ total: 0, avgScore: 0 });
+  const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/simulados')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setExams(data.data.simulados);
+          setStats(data.data.stats);
+        }
+        setLoading(false);
+      });
+  }, []);
+
+  const handleStartExam = async (title: string, type: string, id: string, dbId?: string) => {
+    if (dbId) {
+      // If IN_PROGRESS or COMPLETED, go straight to it
+      router.push(`/dashboard/simulados/${dbId}`);
+      return;
+    }
+    setStarting(id);
+    try {
+      const res = await fetch('/api/simulados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, type })
+      });
+      const data = await res.json();
+      if (data.success) {
+        router.push(`/dashboard/simulados/${data.data.exam.id}`);
+      }
+    } finally {
+      setStarting(null);
+    }
+  };
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <DashboardHeader />
@@ -75,12 +68,12 @@ export default function SimuladosPage() {
           
           <div className="absolute top-0 right-0 hidden lg:flex items-center gap-6">
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-black text-primary italic">765</span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Média Geral</span>
+              <span className="text-3xl font-black text-primary italic">{stats.avgScore}</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Média Geral (TRI)</span>
             </div>
             <div className="h-10 w-px bg-border"></div>
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-black text-green-500 italic">08</span>
+              <span className="text-3xl font-black text-green-500 italic">0{stats.total}</span>
               <span className="text-[10px] font-bold text-muted-foreground uppercase">Realizados</span>
             </div>
           </div>
@@ -95,12 +88,14 @@ export default function SimuladosPage() {
             </div>
             
             <div className="grid gap-4">
-              {SIMULADOS.map((exam) => (
+              {loading ? (
+                <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+              ) : exams.map((exam) => (
                 <Card key={exam.id} className={cn(
                   "border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 group overflow-hidden relative",
-                  exam.status === "completed" && "opacity-75"
+                  exam.status === "COMPLETED" && "opacity-75"
                 )}>
-                  {exam.status === "available" && (
+                  {exam.status === "AVAILABLE" && (
                      <div className="absolute top-0 left-0 w-1 h-full bg-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]"></div>
                   )}
                   <CardContent className="p-6">
@@ -110,14 +105,14 @@ export default function SimuladosPage() {
                           "h-14 w-14 rounded-2xl border flex items-center justify-center bg-background shrink-0 shadow-inner group-hover:scale-110 transition-transform",
                           exam.accent
                         )}>
-                          {exam.status === "completed" ? <Award className="h-7 w-7" /> : <PlayCircle className="h-7 w-7" />}
+                          {exam.status === "COMPLETED" ? <Award className="h-7 w-7 text-green-500" /> : <PlayCircle className="h-7 w-7" />}
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                              <Badge variant="outline" className="text-[9px] font-black uppercase border-border/50">{exam.type}</Badge>
                              <Badge variant="secondary" className="text-[9px] font-black uppercase bg-primary/10 text-primary">{exam.xp} XP</Badge>
                           </div>
-                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{exam.name}</h3>
+                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{exam.title}</h3>
                           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground font-medium italic">
                             <span className="flex items-center gap-1.5"><BarChart3 className="h-3 w-3" /> {exam.questions} Questões</span>
                             <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {exam.time}</span>
@@ -127,14 +122,20 @@ export default function SimuladosPage() {
                       </div>
                       
                       <div className="w-full sm:w-auto text-right">
-                        {exam.status === "completed" ? (
+                        {exam.status === "COMPLETED" ? (
                           <div className="flex flex-col items-end">
                             <span className="text-2xl font-black text-green-500 italic leading-none">{exam.score}</span>
                             <span className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-1 mt-1">Concluído <CheckCircle2 className="h-3 w-3 text-green-500" /></span>
-                            <Button variant="ghost" size="sm" className="mt-3 text-[10px] font-bold h-7 uppercase">Ver Detalhes</Button>
+                            <Button variant="ghost" size="sm" className="mt-3 text-[10px] font-bold h-7 uppercase" onClick={() => router.push(`/dashboard/simulados/${exam.dbId}`)}>Revisar</Button>
                           </div>
                         ) : (
-                          <Button className="w-full sm:w-auto px-8 font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition-all">Iniciar</Button>
+                          <Button 
+                             disabled={starting === exam.id} 
+                             onClick={() => handleStartExam(exam.title, exam.type, exam.id, exam.dbId)}
+                             className="w-full sm:w-auto px-8 font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                          >
+                             {starting === exam.id ? <Loader2 className="animate-spin h-5 w-5" /> : (exam.status === "IN_PROGRESS" ? "Continuar" : "Iniciar")}
+                          </Button>
                         )}
                       </div>
                     </div>

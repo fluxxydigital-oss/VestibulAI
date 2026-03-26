@@ -1,20 +1,49 @@
 "use client"
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PenTool, Sparkles, Clock, FileText, CheckCircle2, TrendingUp, BrainCircuit, ChevronRight, MessageSquareQuote } from "lucide-react";
+import { PenTool, Sparkles, Clock, FileText, CheckCircle2, TrendingUp, BrainCircuit, ChevronRight, MessageSquareQuote, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ESSAY_TOPICS = [
-  { id: 1, title: "Inteligência Artificial na Educação do Século XXI", tag: "Tecnologia", status: "Iniciada", xp: 1500, deadline: "Hoje" },
-  { id: 2, title: "Os desafios da saúde mental entre jovens brasileiros", tag: "Sociedade", status: "Disponível", xp: 1200, deadline: "2 dias" },
-  { id: 3, title: "Segurança alimentar e a crise hídrica", tag: "Meio Ambiente", status: "Concluída", xp: 1800, score: 920, deadline: "Finalizada" },
-  { id: 4, title: "A importância do voto consciente para a democracia", tag: "Política", status: "Disponível", xp: 1100, deadline: "5 dias" }
-];
-
 export default function RedacaoPage() {
+  const router = useRouter();
+  const [essays, setEssays] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/redacao')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setEssays(data.data.essays);
+          setSuggestions(data.data.suggestions);
+        }
+        setLoading(false);
+      });
+  }, []);
+
+  const handleStartTheme = async (themeTitle: string, id: string) => {
+    setStarting(id);
+    try {
+      const res = await fetch('/api/redacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: themeTitle })
+      });
+      const data = await res.json();
+      if (data.success) {
+        router.push(`/dashboard/redacao/${data.data.essay.id}`);
+      }
+    } finally {
+      setStarting(null);
+    }
+  };
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <DashboardHeader />
@@ -33,58 +62,106 @@ export default function RedacaoPage() {
                 Escreva, envie e receba correção instantânea detalhada por critérios do ENEM.
               </p>
             </div>
-            <Button className="h-14 px-10 rounded-2xl bg-gradient-to-r from-primary to-purple-600 font-black uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-105 transition-all text-white">
-               Nova Redação <PenTool className="ml-3 h-5 w-5" />
+            <Button onClick={() => handleStartTheme("Tema Livre", "livre")} disabled={!!starting} className="h-14 px-10 rounded-2xl bg-gradient-to-r from-primary to-purple-600 font-black uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-105 transition-all text-white">
+               {starting === "livre" ? <Loader2 className="animate-spin h-5 w-5" /> : <><PenTool className="mr-3 h-5 w-5" /> Nova Redação</>}
             </Button>
           </div>
         </header>
 
+        {loading ? (
+          <div className="flex justify-center py-20"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+        ) : (
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Recent Topics List */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center gap-4 mb-4">
-              <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">Temas Sugeridos pela IA</h2>
-              <div className="flex-1 h-px bg-border/50"></div>
-            </div>
+          <div className="lg:col-span-2 space-y-8">
+            {/* My Essays */}
+            {essays.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">Minhas Redações</h2>
+                  <div className="flex-1 h-px bg-border/50"></div>
+                </div>
+                <div className="grid gap-4">
+                  {essays.map((essay) => (
+                    <Card key={essay.id} className="group border-border/50 bg-card/40 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 transform hover:-translate-x-1 cursor-pointer" onClick={() => router.push(`/dashboard/redacao/${essay.id}`)}>
+                       <CardContent className="p-6">
+                         <div className="flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-center">
+                           <div className="flex gap-4">
+                             <div className="h-14 w-14 rounded-2xl bg-muted/50 border flex items-center justify-center shrink-0 group-hover:bg-primary/5 transition-colors">
+                               <FileText className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                             </div>
+                             <div className="space-y-1">
+                               <div className="flex items-center gap-2">
+                                 <Badge variant="outline" className={cn(
+                                   "text-[9px] font-black uppercase border-border/50",
+                                   essay.status === "GRADED" ? "text-green-500 bg-green-500/10 border-green-500/20" : "text-yellow-500 bg-yellow-500/10 border-yellow-500/20"
+                                 )}>
+                                   {essay.status === "GRADED" ? "Corrigida" : "Rascunho"}
+                                 </Badge>
+                                 <span className="text-[10px] font-bold text-muted-foreground uppercase">{new Date(essay.updatedAt).toLocaleDateString('pt-BR')}</span>
+                               </div>
+                               <h3 className="text-lg font-bold leading-tight group-hover:text-foreground transition-colors">{essay.theme}</h3>
+                             </div>
+                           </div>
+                           <div className="w-full sm:w-auto text-right">
+                             {essay.status === "GRADED" ? (
+                                <div className="p-3 bg-green-500/5 border border-green-500/20 rounded-xl inline-flex flex-col items-center min-w-[100px]">
+                                  <span className="text-2xl font-black text-green-500 italic leading-none">{essay.score?.total || 1000}</span>
+                                  <span className="text-[9px] font-black uppercase text-green-600/70 mt-1">Sua Nota</span>
+                                </div>
+                             ) : (
+                               <Button variant="ghost" className="w-full sm:w-auto font-black uppercase tracking-widest text-xs hover:bg-primary/10 hover:text-primary gap-2">
+                                 Continuar <ChevronRight className="h-3 w-3" />
+                               </Button>
+                             )}
+                           </div>
+                         </div>
+                       </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            <div className="grid gap-4">
-              {ESSAY_TOPICS.map((topic) => (
-                <Card key={topic.id} className="group border-border/50 bg-card/40 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 transform hover:-translate-x-1">
-                   <CardContent className="p-6">
-                     <div className="flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-center">
-                       <div className="flex gap-4">
-                         <div className="h-14 w-14 rounded-2xl bg-muted/50 border flex items-center justify-center shrink-0 group-hover:bg-primary/5 transition-colors">
-                           <FileText className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+            {/* Suggestions */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4 mb-4">
+                <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-muted-foreground">Temas Sugeridos pela IA</h2>
+                <div className="flex-1 h-px bg-border/50"></div>
+              </div>
+
+              <div className="grid gap-4">
+                {suggestions.map((topic) => (
+                  <Card key={topic.id} className="group border-border/50 bg-card/40 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 transform hover:-translate-x-1">
+                     <CardContent className="p-6">
+                       <div className="flex flex-col sm:flex-row gap-6 justify-between items-start sm:items-center">
+                         <div className="flex gap-4">
+                           <div className="h-14 w-14 rounded-2xl bg-muted/50 border flex items-center justify-center shrink-0 group-hover:bg-primary/5 transition-colors">
+                             <FileText className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                           </div>
+                           <div className="space-y-1">
+                             <div className="flex items-center gap-2">
+                               <Badge variant="outline" className="text-[9px] font-black uppercase border-border/50">{topic.tag}</Badge>
+                               <span className="text-[10px] font-black text-primary uppercase flex items-center gap-1"><Sparkles className="h-3 w-3" /> Sugestão da Semana</span>
+                             </div>
+                             <h3 className="text-lg font-bold leading-tight group-hover:text-foreground transition-colors">{topic.title}</h3>
+                             <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
+                               <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Prazo: {topic.deadline}</span>
+                               <span className="flex items-center gap-1 text-primary"><TrendingUp className="h-3 w-3" /> +{topic.xp} XP</span>
+                             </div>
+                           </div>
                          </div>
-                         <div className="space-y-1">
-                           <div className="flex items-center gap-2">
-                             <Badge variant="outline" className="text-[9px] font-black uppercase border-border/50">{topic.tag}</Badge>
-                             <span className="text-[10px] font-black text-primary uppercase flex items-center gap-1"><Sparkles className="h-3 w-3" /> Sugestão da Semana</span>
-                           </div>
-                           <h3 className="text-lg font-bold leading-tight group-hover:text-foreground transition-colors">{topic.title}</h3>
-                           <div className="flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
-                             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Prazo: {topic.deadline}</span>
-                             <span className="flex items-center gap-1 text-primary"><TrendingUp className="h-3 w-3" /> +{topic.xp} XP</span>
-                           </div>
+                         
+                         <div className="w-full sm:w-auto text-right">
+                             <Button onClick={() => handleStartTheme(topic.title, topic.id)} disabled={!!starting} variant="ghost" className="w-full sm:w-auto font-black uppercase tracking-widest text-xs hover:bg-primary/10 hover:text-primary gap-2">
+                               {starting === topic.id ? <Loader2 className="animate-spin h-4 w-4" /> : "Começar"} <ChevronRight className="h-3 w-3" />
+                             </Button>
                          </div>
                        </div>
-                       
-                       <div className="w-full sm:w-auto text-right">
-                         {topic.status === "Concluída" ? (
-                            <div className="p-3 bg-green-500/5 border border-green-500/20 rounded-xl inline-flex flex-col items-center min-w-[100px]">
-                              <span className="text-2xl font-black text-green-500 italic leading-none">{topic.score}</span>
-                              <span className="text-[9px] font-black uppercase text-green-600/70 mt-1">Sua Nota</span>
-                            </div>
-                         ) : (
-                           <Button variant="ghost" className="w-full sm:w-auto font-black uppercase tracking-widest text-xs hover:bg-primary/10 hover:text-primary gap-2">
-                             Começar <ChevronRight className="h-3 w-3" />
-                           </Button>
-                         )}
-                       </div>
-                     </div>
-                   </CardContent>
-                </Card>
-              ))}
+                     </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -144,6 +221,7 @@ export default function RedacaoPage() {
             </Card>
           </div>
         </div>
+        )}
       </main>
     </div>
   );
