@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const session = await createSession(newUser.id, newUser.email);
 
     // ✅ Return success response
-    return successResponse(
+    const response = successResponse(
       {
         user: {
           id: newUser.id,
@@ -82,6 +82,25 @@ export async function POST(request: NextRequest) {
       },
       201
     );
+
+    // ✅ Explicitly set cookies on the response object
+    response.cookies.set("auth_token", session.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: parseInt(process.env.JWT_EXPIRATION || "86400"),
+    });
+
+    response.cookies.set("refresh_token", session.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: parseInt(process.env.REFRESH_TOKEN_EXPIRATION || "2592000"),
+    });
+
+    return response;
   } catch (error) {
     return handleError(error);
   }

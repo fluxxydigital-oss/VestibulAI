@@ -16,8 +16,9 @@ const PUBLIC_ROUTES = [
  * Check if route is public
  */
 function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some(route => 
-    pathname === route || pathname.startsWith(route)
+  if (pathname === '/') return true;
+  return PUBLIC_ROUTES.filter(r => r !== '/').some(route => 
+    pathname === route || pathname.startsWith(route + '/')
   );
 }
 
