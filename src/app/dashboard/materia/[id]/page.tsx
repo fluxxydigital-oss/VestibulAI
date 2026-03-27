@@ -71,7 +71,7 @@ export default function MateriaDetailPage({ params }: { params: Promise<{ id: st
       fetch(`/api/materias/${resolvedParams.id}`)
         .then(res => res.json())
         .then(res => {
-          if(res.success) setData(prev => ({ ...prev, progress: res.data.progress, stats: res.data.stats }));
+          if(res.success) setData((prev: any) => ({ ...prev, progress: res.data.progress, stats: res.data.stats }));
         });
         
     } catch (err) {

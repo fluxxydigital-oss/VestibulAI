@@ -3,7 +3,7 @@ import { getPrisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { handleError, successResponse } from "@/lib/api-error";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSession();
     const userId = session?.userId;
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Rota simples para simular conclusão de uma aula nessa matéria e ganhar XP/Progresso
     const session = await getSession();

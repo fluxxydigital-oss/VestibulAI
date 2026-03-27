@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, ArrowLeft, Send, Save, CheckCircle2 } from "lucide-react"
 
-export default function RedacaoEditorPage({ params }: { params: { id: string } }) {
+export default function RedacaoEditorPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const [essay, setEssay] = useState<any>(null)
   const [content, setContent] = useState("")
@@ -15,7 +16,7 @@ export default function RedacaoEditorPage({ params }: { params: { id: string } }
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/redacao/${params.id}`)
+    fetch(`/api/redacao/${id}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -24,12 +25,12 @@ export default function RedacaoEditorPage({ params }: { params: { id: string } }
         }
         setLoading(false)
       })
-  }, [params.id])
+  }, [id])
 
   const handleSave = async (submit = false) => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/redacao/${params.id}`, {
+      const res = await fetch(`/api/redacao/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content, submit })

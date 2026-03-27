@@ -1,12 +1,13 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Loader2, ArrowLeft, Send, Clock, AlertCircle } from "lucide-react"
 
-export default function SimuladoEnginePage({ params }: { params: { id: string } }) {
+export default function SimuladoEnginePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
   const router = useRouter()
   const [exam, setExam] = useState<any>(null)
   const [questions, setQuestions] = useState<any[]>([])
@@ -16,7 +17,7 @@ export default function SimuladoEnginePage({ params }: { params: { id: string } 
   const [startTime, setStartTime] = useState(Date.now())
 
   useEffect(() => {
-    fetch(`/api/simulados/${params.id}`)
+    fetch(`/api/simulados/${id}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -25,7 +26,7 @@ export default function SimuladoEnginePage({ params }: { params: { id: string } 
         }
         setLoading(false)
       })
-  }, [params.id])
+  }, [id])
 
   const handleSelect = (questionId: string, optionId: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: optionId }))
@@ -35,7 +36,7 @@ export default function SimuladoEnginePage({ params }: { params: { id: string } 
     setSubmitting(true)
     try {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000)
-      const res = await fetch(`/api/simulados/${params.id}`, {
+      const res = await fetch(`/api/simulados/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers, timeSpent })
