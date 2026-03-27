@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       orderBy: { name: 'asc' }
     });
 
-    let progressMap: Record<string, any> = {};
+    const progressMap: Record<string, any> = {};
 
     if (userId) {
       // Busca progresso do usuário se logado

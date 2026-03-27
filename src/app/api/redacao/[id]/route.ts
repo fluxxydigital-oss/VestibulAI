@@ -39,7 +39,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const existing = await prisma.essay.findUnique({ where: { id } });
     if (!existing || existing.userId !== session.userId) throwNotFoundError();
 
-    let dataToUpdate: any = { content };
+    const dataToUpdate: any = { content };
 
     if (submit) {
       dataToUpdate.status = "GRADED";

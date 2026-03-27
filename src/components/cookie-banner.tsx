@@ -12,6 +12,7 @@ export function CookieBanner() {
     // Check if the user has already accepted the cookies
     const cookieConsent = localStorage.getItem("vestibulai-cookie-consent");
     if (!cookieConsent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsVisible(true);
     }
   }, []);

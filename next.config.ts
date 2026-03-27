@@ -12,9 +12,6 @@ const nextConfig: NextConfig = {
   },
 
   /* Ignore build errors to unblock Vercel deploys */
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
