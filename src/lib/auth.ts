@@ -1,20 +1,19 @@
 import jwt from "jsonwebtoken";
 import bcryptjs from "bcryptjs";
 import { cookies } from "next/headers";
+import { env } from "./env";
 
 // =====================================================
 // CONSTANTS
 // =====================================================
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "your-secret-key";
-const JWT_EXPIRATION = parseInt(process.env.JWT_EXPIRATION || "86400"); // 24 hours
-const REFRESH_TOKEN_EXPIRATION = parseInt(
-  process.env.REFRESH_TOKEN_EXPIRATION || "2592000"
-); // 30 days
+const JWT_SECRET = env.NEXTAUTH_SECRET;
+const JWT_EXPIRATION = parseInt(env.JWT_EXPIRATION); // 24 hours
+const REFRESH_TOKEN_EXPIRATION = parseInt(env.REFRESH_TOKEN_EXPIRATION); // 30 days
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/",
   maxAge: JWT_EXPIRATION,
@@ -143,7 +142,7 @@ export async function clearAuthCookies(): Promise<void> {
 
   cookieStore.set("auth_token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
     sameSite: "strict" as const,
     path: "/",
     maxAge: 0,
@@ -151,7 +150,7 @@ export async function clearAuthCookies(): Promise<void> {
 
   cookieStore.set("refresh_token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: env.NODE_ENV === "production",
     sameSite: "strict" as const,
     path: "/",
     maxAge: 0,

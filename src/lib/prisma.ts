@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import { env } from "./env";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -13,10 +14,11 @@ const globalForPrisma = globalThis as unknown as {
 export function getPrisma(): PrismaClient {
   if (!globalForPrisma.prisma) {
     const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false, // Bypass SSL certificate verification for development
-      },
+      connectionString: env.DATABASE_URL,
+      ssl:
+        env.NODE_ENV === "production"
+          ? { rejectUnauthorized: false }
+          : false,
     });
     const adapter = new PrismaPg(pool);
     globalForPrisma.prisma = new PrismaClient({ adapter });
