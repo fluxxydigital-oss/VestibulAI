@@ -26,6 +26,8 @@ export interface User {
   email: string;
   targetCourse?: string;
   targetDate?: string;
+  phone?: string;
+  birthDate?: string;
   plan?: 'FREE' | 'PRO' | 'PREMIUM';
   xp?: number;
 }

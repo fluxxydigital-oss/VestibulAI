@@ -100,10 +100,10 @@ export default function ProfilePage() {
   const config = subConfigs[subscriptionType];
 
   // Máscaras de Input
-  const [birthDate, setBirthDate] = useState("15/10/2007");
+  const [birthDate, setBirthDate] = useState(user?.birthDate || "");
   const birthDateRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(user?.phone || "");
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -121,10 +121,14 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState(user?.name || "");
   const [targetCourseState, setTargetCourse] = useState(user?.targetCourse || "");
 
+  const { checkAuthStatus } = useAuth(); // Destructure checkAuthStatus
+
   useEffect(() => {
      if (user) {
         setFullName(user.name || "");
         setTargetCourse(user.targetCourse || "");
+        if (user.phone) setPhone(user.phone);
+        if (user.birthDate) setBirthDate(user.birthDate);
      }
   }, [user]);
 
@@ -159,6 +163,10 @@ export default function ProfilePage() {
         })
       });
       if (!res.ok) throw new Error("Erro ao salvar perfil");
+      
+      // Refresh user info
+      await checkAuthStatus();
+      
       alert("Perfil atualizado com sucesso!");
     } catch (e) {
       console.error(e);

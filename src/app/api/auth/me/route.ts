@@ -31,6 +31,8 @@ export async function GET(request: NextRequest) {
         targetCourse: true,
         targetDate: true,
         dailyStudyHours: true,
+        phone: true,
+        birthDate: true,
         plan: true,
         xp: true,
         createdAt: true,

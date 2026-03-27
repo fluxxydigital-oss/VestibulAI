@@ -21,9 +21,9 @@ export async function PATCH(request: NextRequest) {
       data: {
         ...(name && { name }),
         ...(targetCourse && { targetCourse }),
-        ...(hours !== undefined && { dailyStudyHours: hours })
-        // Note: phone and birthDate would require adding fields to Prisma schema if we wanted them stored
-        // For the MVP, we will only persist what's available or update schema later
+        ...(hours !== undefined && { dailyStudyHours: hours }),
+        ...(phone && { phone }),
+        ...(birthDate && { birthDate })
       }
     });
 

@@ -76,6 +76,8 @@ export async function POST(request: NextRequest) {
           name: newUser.name,
           email: newUser.email,
           targetCourse: newUser.targetCourse,
+          phone: newUser.phone,
+          birthDate: newUser.birthDate,
         },
         accessToken: session.accessToken,
         refreshToken: session.refreshToken,
