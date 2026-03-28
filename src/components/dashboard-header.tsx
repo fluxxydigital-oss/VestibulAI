@@ -46,10 +46,10 @@ export function DashboardHeader() {
       
       <div className="ml-auto w-full max-w-sm sm:max-w-max flex items-center justify-end gap-4 sm:gap-8">
         <DropdownMenu>
-          <DropdownMenuTrigger className="lg:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition">
+          <DropdownMenuTrigger className="lg:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition z-40">
             <Menu className="h-5 w-5" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 p-1 bg-background/95 border border-border/50 backdrop-blur" sideOffset={8} align="start">
+          <DropdownMenuContent className="w-56 p-1 bg-background/95 border border-border/50 backdrop-blur z-50" sideOffset={8} align="end">
             {navItems.map((item) => (
               <DropdownMenuItem
                 key={item.href}
@@ -80,11 +80,6 @@ export function DashboardHeader() {
 
         <div className="flex items-center gap-2">
           <PWAInstallButton />
-          <div className="hidden md:flex flex-col items-end">
-            <span className="text-xs font-bold text-primary">Nível 12</span>
-            <span className="text-[10px] text-muted-foreground">350/500 XP</span>
-          </div>
-
           <div className="hidden md:flex flex-col items-end">
             <span className="text-xs font-bold text-primary">Nível 12</span>
             <span className="text-[10px] text-muted-foreground">350/500 XP</span>

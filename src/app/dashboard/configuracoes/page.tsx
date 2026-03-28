@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { BrainCircuit, ArrowLeft, Settings, Bell, Lock, Languages, Smartphone } from "lucide-react";
+import { BrainCircuit, ArrowLeft, Settings, Bell, Lock, Languages, Smartphone, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 
 export default function SettingsPage() {
   return (
@@ -92,6 +93,34 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <Button variant="ghost" size="sm">Alterar</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* App Installation Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Download className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-bold">Instalar App</h2>
+            </div>
+            <Card className="border-border/50">
+              <CardHeader>
+                <CardTitle className="text-lg">VestibulAI no seu Dispositivo</CardTitle>
+                <CardDescription>Baixe a aplicação como um app nativo para melhor experiência.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:bg-muted/30 transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                      <Download className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="font-medium">Baixar VestibulAI</div>
+                      <div className="text-xs text-muted-foreground">Acesse como um app nativo no seu celular ou computador</div>
+                    </div>
+                  </div>
+                  <PWAInstallPrompt />
                 </div>
               </CardContent>
             </Card>
