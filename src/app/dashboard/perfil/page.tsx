@@ -36,7 +36,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, checkAuthStatus } = useAuth();
   const [saving, setSaving] = useState(false);
   
   // Real subscription type mapped to the UI types
@@ -115,8 +115,6 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState(user?.image || "");
   const [changedAvatarBase64, setChangedAvatarBase64] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-
-  const { checkAuthStatus } = useAuth(); // Destructure checkAuthStatus
 
   const resizeImageToBase64 = (file: File, maxSize = 1024, quality = 0.8): Promise<string> => {
     return new Promise((resolve, reject) => {
