@@ -1,6 +1,7 @@
 "use client"
 
-import { BrainCircuit, User, CreditCard, Settings, LifeBuoy, Menu } from "lucide-react";
+import { useState } from "react";
+import { BrainCircuit, User, CreditCard, Settings, LifeBuoy, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/hooks";
@@ -36,9 +37,15 @@ export function DashboardHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleNavClick = (href: string) => {
+    setMobileMenuOpen(false);
+    router.push(href);
+  };
 
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-8 shadow-sm">
+    <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-8 shadow-sm">
       <Link className="flex items-center gap-3 font-bold text-2xl tracking-tight hover:opacity-90 transition-opacity" href="/dashboard">
         <div className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-2 rounded-xl">
           <BrainCircuit className="h-6 w-6 text-primary" />
@@ -47,22 +54,13 @@ export function DashboardHeader() {
       </Link>
       
       <div className="ml-auto w-full max-w-sm sm:max-w-max flex items-center justify-end gap-4 sm:gap-8">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="lg:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition z-40">
-            <Menu className="h-5 w-5" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 p-1 bg-background/95 border border-border/50 backdrop-blur z-[100]" sideOffset={8} align="end">
-            {navItems.map((item) => (
-              <DropdownMenuItem
-                key={item.href}
-                onSelect={() => router.push(item.href)}
-                className="px-3 py-2 rounded-lg hover:bg-primary/10"
-              >
-                {item.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <button
+          className="lg:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition z-40"
+          onClick={() => setMobileMenuOpen(true)}
+          aria-label="Abrir menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
 
         <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
           {navItems.map((item) => (
@@ -156,6 +154,32 @@ export function DashboardHeader() {
           </DropdownMenu>
         </div>
       </div>
+
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-border/40">
+            <span className="text-lg font-bold">Menu</span>
+            <button
+              className="p-2 rounded-md hover:bg-muted/40"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Fechar menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+            {navItems.map((item) => (
+              <button
+                key={item.href}
+                onClick={() => handleNavClick(item.href)}
+                className={`w-full text-left rounded-lg px-4 py-3 text-base font-semibold transition ${pathname === item.href ? "bg-primary/20 text-primary" : "hover:bg-muted/40"}`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
