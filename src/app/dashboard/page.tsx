@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BarChart3, BookOpen, BrainCircuit, Target, CheckCircle2, Clock, CalendarDays, Flame, Trophy, TrendingUp, AlertCircle, PlayCircle, PauseCircle, LogOut, RotateCcw, ChevronRight } from "lucide-react";
-import { DashboardHeader } from "@/components/dashboard-header";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -148,8 +147,6 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <DashboardHeader />
-
       <main className="flex flex-1 flex-col gap-6 p-4 md:gap-8 md:p-8 w-full">
         {/* Welcome Section & Gamification Header */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-card border rounded-2xl p-6 shadow-sm">
