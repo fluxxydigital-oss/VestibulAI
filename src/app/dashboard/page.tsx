@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BarChart3, BookOpen, BrainCircuit, Target, CheckCircle2, Clock, CalendarDays, Flame, Trophy, TrendingUp, AlertCircle, PlayCircle, PauseCircle, LogOut, RotateCcw, ChevronRight } from "lucide-react";
+import { DashboardHeader } from "@/components/dashboard-header";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -147,121 +148,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-8 shadow-sm">
-        <Link className="flex items-center gap-3 font-bold text-2xl tracking-tight" href="/dashboard">
-
-          <div className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-2 rounded-xl">
-            <BrainCircuit className="h-6 w-6 text-primary" />
-          </div>
-          <span className="hidden sm:inline-block">Vestibul<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 dark:from-blue-400 to-primary">AI</span></span>
-        </Link>
-        <div className="ml-auto w-full max-w-sm sm:max-w-max flex items-center justify-end gap-6 sm:gap-8">
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
-            <Link href="/dashboard" className="text-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Dashboard
-            </Link>
-            <Link href="/dashboard/trilha" className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Trilha de Estudo
-            </Link>
-            <Link href="/dashboard/materia" className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Matéria
-            </Link>
-            <Link href="/dashboard/questions" className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Questões
-            </Link>
-            <Link href="/dashboard/simulados" className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Simulados
-            </Link>
-            <Link href="/dashboard/redacao" className="text-muted-foreground hover:text-primary transition-colors whitespace-nowrap">
-              Redação
-            </Link>
-          </nav>
-
-          
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex flex-col items-end">
-                <span className="text-xs font-bold text-primary">Nível {Math.floor((user?.xp || 0) / 100) + 1}</span>
-                <span className="text-[10px] text-muted-foreground">{user?.xp || 0}/{(Math.floor((user?.xp || 0) / 100) + 1) * 100} XP</span>
-              </div>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary ring-offset-2">
-                  <Avatar className="h-11 w-11 border-2 border-primary/20 hover:border-primary transition-colors cursor-pointer shadow-sm relative group">
-                    <AvatarImage src={user?.image || undefined} alt={user?.name || "User"} />
-                    <AvatarFallback className="font-bold bg-primary/10 text-primary text-lg">
-                      {user?.name?.split(' ').filter(Boolean).map(n => n[0]).join('') || user?.email?.[0]?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                    <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-2 ring-background z-10">
-                      {Math.floor((user?.xp || 0) / 100) + 1}
-                    </span>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="w-64 p-2 bg-background/80 backdrop-blur-xl border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] animate-in fade-in-0 zoom-in-95"
-                  align="end"
-                  sideOffset={8}
-                >
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="p-3 font-normal">
-                      <div className="flex flex-col space-y-1.5">
-                        <p className="text-sm font-bold leading-none">{user?.name || "Usuário"}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                          {user?.email}
-                        </p>
-                      </div>
-                    </DropdownMenuLabel>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="bg-border/50" />
-                  <DropdownMenuGroup className="p-1">
-                    <DropdownMenuItem
-                      onClick={() => router.push('/dashboard/perfil')}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary data-[focus]:bg-primary/10 data-[focus]:text-primary cursor-pointer group"
-                    >
-                      <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
-                        <User className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium">Perfil</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push('/dashboard/assinatura')}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary data-[focus]:bg-primary/10 data-[focus]:text-primary cursor-pointer group"
-                    >
-                      <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
-                        <CreditCard className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium">Assinatura</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => router.push('/dashboard/configuracoes')}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary data-[focus]:bg-primary/10 data-[focus]:text-primary cursor-pointer group"
-                    >
-                      <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
-                        <Settings className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium">Configurações</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator className="bg-border/50" />
-                  <DropdownMenuGroup className="p-1">
-                    <button
-                      onClick={handleLogout}
-                      disabled={isLoggingOut}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-destructive/10 hover:text-destructive cursor-pointer group disabled:opacity-50"
-                    >
-                      <div className="bg-muted p-1.5 rounded-md group-hover:bg-destructive/20 transition-colors">
-                        <LogOut className="h-4 w-4" />
-                      </div>
-                      <span className="font-medium">
-                        {isLoggingOut ? "Saindo..." : "Sair"}
-                      </span>
-                    </button>
-                  </DropdownMenuGroup>
-
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-        </div>
-      </header>
+      <DashboardHeader />
 
       <main className="flex flex-1 flex-col gap-6 p-4 md:gap-8 md:p-8 w-full">
         {/* Welcome Section & Gamification Header */}
