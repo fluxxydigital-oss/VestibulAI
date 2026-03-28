@@ -5,7 +5,7 @@ import { BrainCircuit, ArrowLeft, Settings, Bell, Lock, Languages, Smartphone, D
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
+import { PWAInstallPrompt } from "@/components/pwa-install";
 
 export default function SettingsPage() {
   return (
