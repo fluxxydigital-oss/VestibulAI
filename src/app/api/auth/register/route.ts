@@ -61,6 +61,8 @@ export async function POST(request: NextRequest) {
         name: true,
         email: true,
         targetCourse: true,
+        phone: true,
+        birthDate: true,
         createdAt: true,
       },
     });
