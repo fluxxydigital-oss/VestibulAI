@@ -46,6 +46,13 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-8 shadow-sm">
+      <button
+        className="md:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition"
+        onClick={() => setMobileMenuOpen(true)}
+        aria-label="Abrir menu"
+      >
+        <Menu className="h-6 w-6" />
+      </button>
       <Link className="flex items-center gap-3 font-bold text-2xl tracking-tight hover:opacity-90 transition-opacity" href="/dashboard">
         <div className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-2 rounded-xl">
           <BrainCircuit className="h-6 w-6 text-primary" />
