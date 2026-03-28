@@ -254,16 +254,11 @@ export default function ProfilePage() {
         throw new Error(message);
       }
 
-      // Update local preview based on saved user payload
-      if (result?.data?.user?.image) {
-        setAvatarUrl(result.data.user.image);
-      }
-
-      // Refresh user info first (this updates user.image)
-      await checkAuthStatus();
-
-      // Now clear the pending change so useEffect can sync avatarUrl with user.image
+      // Clear the pending change first
       setChangedAvatarBase64(null);
+
+      // Refresh user info to get the latest data from server
+      await checkAuthStatus();
 
       alert(result?.message || "Perfil atualizado com sucesso!");
     } catch (e) {

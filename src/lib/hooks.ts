@@ -60,12 +60,15 @@ export function useAuth() {
 
       if (result.success && result.data && result.data.user) {
         setUser(result.data.user);
+        return result.data.user;
       } else {
         setUser(null);
+        return null;
       }
     } catch (err) {
       setUser(null);
       console.error('Auth check failed:', err);
+      return null;
     } finally {
       setLoading(false);
     }

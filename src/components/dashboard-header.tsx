@@ -24,10 +24,12 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Trilha de Estudo", href: "/dashboard/trilha" },
+  { label: "Diagnóstico", href: "/dashboard/diagnostico" },
   { label: "Matéria", href: "/dashboard/materia" },
   { label: "Questões", href: "/dashboard/questions" },
   { label: "Simulados", href: "/dashboard/simulados" },
   { label: "Redação", href: "/dashboard/redacao" },
+  { label: "Conquistas", href: "/dashboard/conquistas" },
 ];
 
 export function DashboardHeader() {
@@ -49,7 +51,7 @@ export function DashboardHeader() {
           <DropdownMenuTrigger className="lg:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition z-40">
             <Menu className="h-5 w-5" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56 p-1 bg-background/95 border border-border/50 backdrop-blur z-50" sideOffset={8} align="end">
+          <DropdownMenuContent className="w-56 p-1 bg-background/95 border border-border/50 backdrop-blur z-[100]" sideOffset={8} align="end">
             {navItems.map((item) => (
               <DropdownMenuItem
                 key={item.href}
