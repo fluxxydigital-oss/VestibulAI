@@ -15,6 +15,7 @@ model User {
   targetDate      DateTime?      // ex: 2024-11-05
   phone           String?
   birthDate       String?
+  image           String?        @db.Text
   dailyStudyHours Float?         // ex: 4.5
   plan            String         @default("FREE") // FREE, PRO, PREMIUM
   xp              Int            @default(0)      // Pontos de experiência globais

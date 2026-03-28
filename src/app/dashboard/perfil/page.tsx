@@ -89,14 +89,6 @@ export default function ProfilePage() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload the file here
-      console.log("File selected:", file.name);
-    }
-  };
-
   const config = subConfigs[subscriptionType];
 
   // Máscaras de Input
@@ -120,8 +112,20 @@ export default function ProfilePage() {
 
   const [fullName, setFullName] = useState(user?.name || "");
   const [targetCourseState, setTargetCourse] = useState(user?.targetCourse || "");
+  const [avatarUrl, setAvatarUrl] = useState(user?.image || "");
+  const [changedAvatarBase64, setChangedAvatarBase64] = useState<string | null>(null);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
 
   const { checkAuthStatus } = useAuth(); // Destructure checkAuthStatus
+
+  // Cleanup object URL when component unmounts or when avatar changes
+  useEffect(() => {
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [objectUrl]);
 
   useEffect(() => {
      if (user) {
@@ -129,8 +133,31 @@ export default function ProfilePage() {
         setTargetCourse(user.targetCourse || "");
         if (user.phone) setPhone(user.phone);
         if (user.birthDate) setBirthDate(user.birthDate);
+        // Only update avatarUrl from user if there's no pending change
+        // (changedAvatarBase64 is set when user selects a new image)
+        if (user.image && !changedAvatarBase64) setAvatarUrl(user.image);
      }
-  }, [user]);
+  }, [user, changedAvatarBase64]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Revoke previous object URL if exists
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+
+      const newObjectUrl = URL.createObjectURL(file);
+      setObjectUrl(newObjectUrl);
+      setAvatarUrl(newObjectUrl);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setChangedAvatarBase64(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -159,14 +186,18 @@ export default function ProfilePage() {
           name: fullName,
           targetCourse: targetCourseState,
           phone,
-          birthDate
+          birthDate,
+          ...(changedAvatarBase64 && { image: changedAvatarBase64 })
         })
       });
       if (!res.ok) throw new Error("Erro ao salvar perfil");
-      
-      // Refresh user info
+
+      // Refresh user info first (this updates user.image)
       await checkAuthStatus();
-      
+
+      // Now clear the pending change so useEffect can sync avatarUrl with user.image
+      setChangedAvatarBase64(null);
+
       alert("Perfil atualizado com sucesso!");
     } catch (e) {
       console.error(e);
@@ -202,7 +233,7 @@ export default function ProfilePage() {
           <div className="relative p-8 pt-12 flex flex-col md:flex-row items-center md:items-end gap-6">
             <div className="relative group">
               <Avatar className="h-32 w-32 border-4 border-background shadow-2xl ring-4 ring-primary/5">
-                <AvatarImage src="" />
+                <AvatarImage src={avatarUrl || ""} className="object-cover" />
                 <AvatarFallback className={`text-4xl font-black bg-gradient-to-br ${subscriptionType === "premium" ? 'from-pink-500/20 to-pink-500/5 text-pink-500' : 'from-primary/20 to-primary/5 text-primary'}`}>
                   {user?.name?.split(' ').filter(Boolean).map(n => n[0]).join('') || user?.email?.[0]?.toUpperCase() || "U"}
                 </AvatarFallback>

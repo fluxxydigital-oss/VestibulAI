@@ -9,7 +9,7 @@ export async function PATCH(request: NextRequest) {
     if (!session) throwAuthenticationError();
 
     const body = await request.json();
-    const { name, phone, birthDate, targetCourse, dailyStudyHours } = body;
+    const { name, phone, birthDate, targetCourse, dailyStudyHours, image } = body;
 
     const prisma = getPrisma();
     
@@ -23,17 +23,25 @@ export async function PATCH(request: NextRequest) {
         ...(targetCourse && { targetCourse }),
         ...(hours !== undefined && { dailyStudyHours: hours }),
         ...(phone && { phone }),
-        ...(birthDate && { birthDate })
+        ...(birthDate && { birthDate }),
+        ...(image !== undefined && { image })
       }
     });
 
-    return successResponse({ 
+    return successResponse({
       user: {
+        id: updatedUser.id,
         name: updatedUser.name,
+        email: updatedUser.email,
         targetCourse: updatedUser.targetCourse,
-        dailyStudyHours: updatedUser.dailyStudyHours
+        dailyStudyHours: updatedUser.dailyStudyHours,
+        phone: updatedUser.phone,
+        birthDate: updatedUser.birthDate,
+        image: updatedUser.image,
+        plan: updatedUser.plan,
+        xp: updatedUser.xp,
       },
-      message: "Perfil atualizado com sucesso!" 
+      message: "Perfil atualizado com sucesso!"
     }, 200);
 
   } catch (error) {

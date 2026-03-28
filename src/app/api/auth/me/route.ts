@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
         dailyStudyHours: true,
         phone: true,
         birthDate: true,
+        image: true,
         plan: true,
         xp: true,
         createdAt: true,

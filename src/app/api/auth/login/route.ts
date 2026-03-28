@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
           targetCourse: user.targetCourse,
           phone: user.phone,
           birthDate: user.birthDate,
+          image: user.image,
         },
         accessToken: session.accessToken,
         refreshToken: session.refreshToken,

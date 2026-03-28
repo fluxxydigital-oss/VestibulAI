@@ -28,6 +28,7 @@ export interface User {
   targetDate?: string;
   phone?: string;
   birthDate?: string;
+  image?: string;
   plan?: 'FREE' | 'PRO' | 'PREMIUM';
   xp?: number;
 }

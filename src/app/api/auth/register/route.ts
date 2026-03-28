@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
         targetCourse: true,
         phone: true,
         birthDate: true,
+        image: true,
         createdAt: true,
       },
     });
