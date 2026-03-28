@@ -114,18 +114,55 @@ export default function ProfilePage() {
   const [targetCourseState, setTargetCourse] = useState(user?.targetCourse || "");
   const [avatarUrl, setAvatarUrl] = useState(user?.image || "");
   const [changedAvatarBase64, setChangedAvatarBase64] = useState<string | null>(null);
-  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const { checkAuthStatus } = useAuth(); // Destructure checkAuthStatus
 
-  // Cleanup object URL when component unmounts or when avatar changes
-  useEffect(() => {
-    return () => {
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-  }, [objectUrl]);
+  const resizeImageToBase64 = (file: File, maxSize = 1024, quality = 0.8): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      const image = new Image();
+
+      reader.onload = () => {
+        image.src = reader.result as string;
+      };
+
+      reader.onerror = () => reject(new Error("Falha ao ler o arquivo de imagem."));
+
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = image.width;
+        let height = image.height;
+
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          return reject(new Error("Falha ao criar o contexto do canvas."));
+        }
+
+        ctx.drawImage(image, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedBase64);
+      };
+
+      image.onerror = () => reject(new Error("Falha ao processar a imagem."));
+
+      reader.readAsDataURL(file);
+    });
+  };
 
   useEffect(() => {
      if (user) {
@@ -139,23 +176,41 @@ export default function ProfilePage() {
      }
   }, [user, changedAvatarBase64]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
     const file = e.target.files?.[0];
-    if (file) {
-      // Revoke previous object URL if exists
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setFileError("Por favor selecione um arquivo de imagem válido.");
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      let base64: string;
+
+      if (file.size > 2 * 1024 * 1024) {
+        base64 = await resizeImageToBase64(file, 1024, 0.8);
+      } else {
+        base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (reader.result) resolve(reader.result as string);
+            else reject(new Error("Falha ao ler a imagem."));
+          };
+          reader.onerror = () => reject(new Error("Falha ao ler a imagem."));
+          reader.readAsDataURL(file);
+        });
       }
 
-      const newObjectUrl = URL.createObjectURL(file);
-      setObjectUrl(newObjectUrl);
-      setAvatarUrl(newObjectUrl);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setChangedAvatarBase64(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setChangedAvatarBase64(base64);
+      setAvatarUrl(base64);
+      e.target.value = "";
+    } catch (error) {
+      console.error(error);
+      setFileError("Não foi possível processar a imagem. Tente outro arquivo ou um arquivo menor.");
+      e.target.value = "";
     }
   };
 
@@ -176,6 +231,7 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     setSaving(true);
+    setFileError(null);
     try {
       const res = await fetch('/api/user/profile', {
         method: 'PATCH',
@@ -190,7 +246,18 @@ export default function ProfilePage() {
           ...(changedAvatarBase64 && { image: changedAvatarBase64 })
         })
       });
-      if (!res.ok) throw new Error("Erro ao salvar perfil");
+
+      const result = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        const message = result?.message || result?.error || 'Erro ao salvar perfil';
+        throw new Error(message);
+      }
+
+      // Update local preview based on saved user payload
+      if (result?.data?.user?.image) {
+        setAvatarUrl(result.data.user.image);
+      }
 
       // Refresh user info first (this updates user.image)
       await checkAuthStatus();
@@ -198,10 +265,11 @@ export default function ProfilePage() {
       // Now clear the pending change so useEffect can sync avatarUrl with user.image
       setChangedAvatarBase64(null);
 
-      alert("Perfil atualizado com sucesso!");
+      alert(result?.message || "Perfil atualizado com sucesso!");
     } catch (e) {
       console.error(e);
-      alert("Falha ao salvar o perfil.");
+      setFileError((e as Error).message || "Falha ao salvar o perfil.");
+      alert(`Falha ao salvar o perfil: ${(e as Error).message}`);
     } finally {
       setSaving(false);
     }
@@ -233,7 +301,12 @@ export default function ProfilePage() {
           <div className="relative p-8 pt-12 flex flex-col md:flex-row items-center md:items-end gap-6">
             <div className="relative group">
               <Avatar className="h-32 w-32 border-4 border-background shadow-2xl ring-4 ring-primary/5">
-                <AvatarImage src={avatarUrl || ""} className="object-cover" />
+                <AvatarImage
+                  key={avatarUrl}
+                  src={avatarUrl || undefined}
+                  alt="Foto de perfil"
+                  className="object-cover"
+                />
                 <AvatarFallback className={`text-4xl font-black bg-gradient-to-br ${subscriptionType === "premium" ? 'from-pink-500/20 to-pink-500/5 text-pink-500' : 'from-primary/20 to-primary/5 text-primary'}`}>
                   {user?.name?.split(' ').filter(Boolean).map(n => n[0]).join('') || user?.email?.[0]?.toUpperCase() || "U"}
                 </AvatarFallback>
@@ -252,6 +325,12 @@ export default function ProfilePage() {
               >
                 <Camera className="h-4 w-4" />
               </button>
+
+              {fileError && (
+                <p className="text-xs text-destructive mt-2 absolute left-0 right-0 bottom-[-1.8rem] text-center">
+                  {fileError}
+                </p>
+              )}
             </div>
 
             <div className="flex-1 text-center md:text-left space-y-2">

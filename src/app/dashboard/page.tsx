@@ -187,7 +187,7 @@ export default function DashboardPage() {
               <DropdownMenu>
                 <DropdownMenuTrigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary ring-offset-2">
                   <Avatar className="h-11 w-11 border-2 border-primary/20 hover:border-primary transition-colors cursor-pointer shadow-sm relative group">
-                    <AvatarImage src="" alt={user?.name || "User"} />
+                    <AvatarImage src={user?.image || undefined} alt={user?.name || "User"} />
                     <AvatarFallback className="font-bold bg-primary/10 text-primary text-lg">
                       {user?.name?.split(' ').filter(Boolean).map(n => n[0]).join('') || user?.email?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>

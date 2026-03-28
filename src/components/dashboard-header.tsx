@@ -3,6 +3,7 @@
 import { BrainCircuit, User, CreditCard, Settings, LifeBuoy } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/lib/hooks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
 export function DashboardHeader() {
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-8 shadow-sm">
@@ -67,7 +69,7 @@ export function DashboardHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary ring-offset-2">
               <Avatar className="h-11 w-11 border-2 border-primary/20 hover:border-primary transition-colors cursor-pointer shadow-sm relative group">
-                <AvatarImage src="" alt="User" />
+                <AvatarImage src={user?.image || undefined} alt="User" />
                 <AvatarFallback className="font-bold bg-primary/10 text-primary text-lg">JS</AvatarFallback>
                 <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-2 ring-background z-10">
                   12
