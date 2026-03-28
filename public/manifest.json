@@ -1,0 +1,22 @@
+{
+  "name": "VestibulAI",
+  "short_name": "VestibulAI",
+  "description": "Plataforma adaptativa de estudos com IA para vestibulares.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/file.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/next.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

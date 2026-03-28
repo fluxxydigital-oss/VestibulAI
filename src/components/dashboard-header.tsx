@@ -1,6 +1,6 @@
 "use client"
 
-import { BrainCircuit, User, CreditCard, Settings, LifeBuoy } from "lucide-react";
+import { BrainCircuit, User, CreditCard, Settings, LifeBuoy, Menu } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/hooks";
@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PWAInstallButton } from "@/components/pwa-install";
 
 interface NavItem {
   label: string;
@@ -43,7 +44,24 @@ export function DashboardHeader() {
         <span className="hidden sm:inline-block font-heading italic text-foreground tracking-tight">Vestibul<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 dark:from-blue-400 to-primary">AI</span></span>
       </Link>
       
-      <div className="ml-auto w-full max-w-sm sm:max-w-max flex items-center justify-end gap-6 sm:gap-8">
+      <div className="ml-auto w-full max-w-sm sm:max-w-max flex items-center justify-end gap-4 sm:gap-8">
+        <DropdownMenu>
+          <DropdownMenuTrigger className="lg:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition">
+            <Menu className="h-5 w-5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 p-1 bg-background/95 border border-border/50 backdrop-blur" sideOffset={8} align="start">
+            {navItems.map((item) => (
+              <DropdownMenuItem
+                key={item.href}
+                onSelect={() => router.push(item.href)}
+                className="px-3 py-2 rounded-lg hover:bg-primary/10"
+              >
+                {item.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
           {navItems.map((item) => (
             <Link
@@ -60,7 +78,13 @@ export function DashboardHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <PWAInstallButton />
+          <div className="hidden md:flex flex-col items-end">
+            <span className="text-xs font-bold text-primary">Nível 12</span>
+            <span className="text-[10px] text-muted-foreground">350/500 XP</span>
+          </div>
+
           <div className="hidden md:flex flex-col items-end">
             <span className="text-xs font-bold text-primary">Nível 12</span>
             <span className="text-[10px] text-muted-foreground">350/500 XP</span>
