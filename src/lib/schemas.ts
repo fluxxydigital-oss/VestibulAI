@@ -14,14 +14,10 @@ export const registerSchema = z.object({
     .email("Email inválido"),
   password: z
     .string()
-    .min(8, "Senha deve ter no mínimo 8 caracteres")
-    .regex(/[A-Z]/, "Senha deve conter pelo menos uma letra maiúscula")
-    .regex(/[a-z]/, "Senha deve conter pelo menos uma letra minúscula")
-    .regex(/[0-9]/, "Senha deve conter pelo menos um número")
-    .regex(/[^A-Za-z0-9]/, "Senha deve conter pelo menos um caractere especial"),
+    .min(6, "Senha deve ter no mínimo 6 caracteres"),
   confirmPassword: z
     .string()
-    .min(8, "Confirmação de senha é obrigatória"),
+    .min(6, "Confirmação de senha é obrigatória"),
   targetCourse: z
     .string()
     .optional()

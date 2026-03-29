@@ -17,11 +17,12 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [targetCourse, setTargetCourse] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await register(name, email, password, targetCourse);
+    const success = await register(name, email, password, confirmPassword, targetCourse);
     if (success) {
       router.push("/dashboard");
     }
@@ -118,7 +119,19 @@ export default function RegisterPage() {
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Crie uma senha forte"
+                  placeholder="Crie uma senha de no min. 6 caracteres"
+                  className="h-11 px-4 bg-background/50 border-border focus:ring-primary/20"
+                  required 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-foreground font-medium">Confirmar Senha</Label>
+                <Input 
+                  id="confirmPassword" 
+                  type="password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirme a senha"
                   className="h-11 px-4 bg-background/50 border-border focus:ring-primary/20"
                   required 
                 />

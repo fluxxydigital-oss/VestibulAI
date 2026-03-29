@@ -74,7 +74,7 @@ export function useAuth() {
     }
   };
 
-  const register = async (name: string, email: string, password: string, targetCourse: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password: string, confirmPassword: string, targetCourse: string): Promise<boolean> => {
     try {
       setLoading(true);
       setError(null);
@@ -84,7 +84,7 @@ export function useAuth() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password, confirmPassword: password, targetCourse }),
+        body: JSON.stringify({ name, email, password, confirmPassword, targetCourse }),
       });
 
       const result: ApiResponse<AuthResponse> = await response.json();
