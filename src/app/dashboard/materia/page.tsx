@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { DashboardHeader } from "@/components/dashboard-header";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ export default function MateriaPage() {
   const filteredSubjects = activeArea === "Todas" ? subjects : subjects.filter(s => s.area === activeArea);
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
-      <DashboardHeader />
+
       
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">

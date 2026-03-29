@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import { DashboardHeader } from "@/components/dashboard-header";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,7 +70,7 @@ export default function TrilhaPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
-      <DashboardHeader />
+
       
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
         <div className="mb-10 text-center relative z-10">

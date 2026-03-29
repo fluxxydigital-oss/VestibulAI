@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardHeader } from "@/components/dashboard-header";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export default function RedacaoPage() {
   };
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
-      <DashboardHeader />
+
       
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
         <header className="mb-12">

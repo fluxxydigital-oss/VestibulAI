@@ -53,16 +53,6 @@ export function DashboardHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 flex h-20 items-center gap-4 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-8 shadow-sm">
-        <button
-          className="md:hidden p-2 rounded-md border border-border/30 hover:bg-muted/30 transition"
-          onClick={() => {
-            setMobileMenuOpen(true);
-            document.body.style.overflow = 'hidden';
-          }}
-          aria-label="Abrir menu"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
         <Link className="flex items-center gap-3 font-bold text-2xl tracking-tight hover:opacity-90 transition-opacity" href="/dashboard">
           <div className="bg-gradient-to-br from-primary/20 to-purple-500/20 p-2 rounded-xl">
             <BrainCircuit className="h-6 w-6 text-primary" />
@@ -132,33 +122,30 @@ export function DashboardHeader() {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-border/50" />
                 <DropdownMenuGroup className="p-1">
-                  <DropdownMenuItem 
-                    onSelect={() => router.push("/dashboard/perfil")}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary cursor-pointer group"
-                  >
-                    <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
-                      <User className="h-4 w-4" />
-                    </div>
-                    <span className="font-medium">Perfil</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onSelect={() => router.push("/dashboard/assinatura")}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary cursor-pointer group"
-                  >
-                    <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
-                      <CreditCard className="h-4 w-4" />
-                    </div>
-                    <span className="font-medium">Assinatura</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onSelect={() => router.push("/dashboard/configuracoes")}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary cursor-pointer group"
-                  >
-                    <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
-                      <Settings className="h-4 w-4" />
-                    </div>
-                    <span className="font-medium">Configurações</span>
-                  </DropdownMenuItem>
+                  <Link href="/dashboard/perfil" className="w-full">
+                    <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary cursor-pointer group">
+                      <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
+                        <User className="h-4 w-4" />
+                      </div>
+                      <span className="font-medium">Perfil</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/dashboard/assinatura" className="w-full">
+                    <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary cursor-pointer group">
+                      <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
+                        <CreditCard className="h-4 w-4" />
+                      </div>
+                      <span className="font-medium">Assinatura</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/dashboard/configuracoes" className="w-full">
+                    <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-primary/10 hover:text-primary cursor-pointer group">
+                      <div className="bg-muted p-1.5 rounded-md group-hover:bg-primary/20 transition-colors">
+                        <Settings className="h-4 w-4" />
+                      </div>
+                      <span className="font-medium">Configurações</span>
+                    </DropdownMenuItem>
+                  </Link>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-border/50" />
                 <DropdownMenuGroup className="p-1">

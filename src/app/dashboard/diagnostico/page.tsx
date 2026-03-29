@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardHeader } from "@/components/dashboard-header";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -112,7 +112,7 @@ export default function DiagnosticoPage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background/50">
-      <DashboardHeader />
+
       
       <main className="flex-1 max-w-3xl mx-auto w-full p-4 md:p-8 flex items-center justify-center">
         
