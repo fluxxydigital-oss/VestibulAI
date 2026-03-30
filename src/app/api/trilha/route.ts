@@ -5,8 +5,7 @@ import { handleError, successResponse, throwAuthenticationError } from "@/lib/ap
 
 /**
  * GET /api/trilha
- * Retorna a trilha de estudos (StudyPlan) do usuário logado.
- * Se o usuário não tiver uma trilha, gera uma básica padrão (Mock AI).
+ * Retorna a trilha de estudos (StudyPlan) real do usuário logado.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
     const userId = session.userId;
 
     // 1. Busca a trilha existente
-    let trilha = await prisma.studyPlan.findMany({
+    const trilha = await prisma.studyPlan.findMany({
       where: { userId },
       orderBy: { date: 'asc' },
       include: {
@@ -29,71 +28,9 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // 2. Se não existir, gera uma trilha inicial (Simulando a IA)
+    // 2. Trilha vazia: o frontend exibe o estado sem atividades.
     if (trilha.length === 0) {
-      // Busca a matéria de Matemática e Português para criar a trilha
-      const math = await prisma.subject.findUnique({ where: { name: 'Matemática' } });
-      const port = await prisma.subject.findUnique({ where: { name: 'Português' } });
-
-      if (math && port) {
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        await prisma.studyPlan.createMany({
-          data: [
-            {
-              userId,
-              subjectId: math.id,
-              title: "Fundamentos de Matemática",
-              type: "intro",
-              xpReward: 100,
-              date: today,
-              durationMin: 60,
-              status: "COMPLETED"
-            },
-            {
-              userId,
-              subjectId: math.id,
-              title: "Funções e Gráficos",
-              type: "lesson",
-              xpReward: 150,
-              date: today,
-              durationMin: 90,
-              status: "PENDING"
-            },
-            {
-              userId,
-              subjectId: port.id,
-              title: "Interpretação de Texto Avançada",
-              type: "lesson",
-              xpReward: 200,
-              date: tomorrow,
-              durationMin: 60,
-              status: "PENDING"
-            },
-            {
-              userId,
-              subjectId: math.id,
-              title: "Desafio Semanal: Lógica",
-              type: "boss",
-              xpReward: 500,
-              date: tomorrow,
-              durationMin: 120,
-              status: "PENDING"
-            }
-          ]
-        });
-
-    // Busca novamente após criar
-        trilha = await prisma.studyPlan.findMany({
-          where: { userId },
-          orderBy: { date: 'asc' },
-          include: {
-            subject: { select: { name: true, id: true } }
-          }
-        });
-      }
+      // Nenhuma trilha registrada para o usuário neste momento.
     }
 
     // 3. Busca o progresso real do usuário para o "Raio-X da IA"

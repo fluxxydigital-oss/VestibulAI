@@ -54,26 +54,21 @@ export default function MateriaDetailPage({ params }: { params: Promise<{ id: st
 
   const handleStudy = async (topicId: string) => {
     if (completedTopics.includes(topicId) || studyingId) return;
-    
+
     setStudyingId(topicId);
-    
+
     try {
-      // Simulate studying time
-      await new Promise(r => setTimeout(r, 2000));
-      
-      // Update database progress behind the scenes
       await fetch(`/api/materias/${resolvedParams.id}`, { method: 'POST' });
-      
-      // Mark as complete and update UI locally
+
       setCompletedTopics(prev => [...prev, topicId]);
-      
-      // Refresh strictly progress from API to see the actual math taking effect
+
       fetch(`/api/materias/${resolvedParams.id}`)
         .then(res => res.json())
         .then(res => {
-          if(res.success) setData((prev: any) => ({ ...prev, progress: res.data.progress, stats: res.data.stats }));
+          if (res.success) {
+            setData((prev: any) => ({ ...prev, progress: res.data.progress, stats: res.data.stats }));
+          }
         });
-        
     } catch (err) {
       console.error(err);
     } finally {

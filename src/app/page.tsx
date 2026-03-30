@@ -143,7 +143,7 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-2xl font-bold mb-4">Correção de Redação IA</CardTitle>
                 <CardDescription className="text-base text-muted-foreground leading-relaxed">
-                  Envie seu texto e receba em 10 segundos uma correção detalhada pelas 5 competências do ENEM/UERJ, com reescrita inteligente e apontamentos gramaticais.
+                  Envie seu texto e receba uma análise automatizada pelas competências de redação, com observações práticas para revisar estrutura, coesão e proposta de intervenção.
                 </CardDescription>
               </Card>
 
@@ -156,7 +156,7 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-2xl font-bold mb-4">Simulados Reais</CardTitle>
                 <CardDescription className="text-base text-muted-foreground leading-relaxed">
-                  Gere simulados completos usando o mesmo modelo de Teoria de Resposta ao Item (TRI) oficial, com milhares de questões exclusivas geradas pela nossa Inteligência Artificial.
+                  Monte simulados com o banco atual de questões e acompanhe uma estimativa de desempenho inspirada na lógica de provas como o ENEM.
                 </CardDescription>
               </Card>
 
@@ -182,7 +182,7 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-2xl font-bold mb-4">Banco de Questões</CardTitle>
                 <CardDescription className="text-base text-muted-foreground leading-relaxed">
-                  Acesso ilimitado a mais de 150.000 questões de vestibulares e ENEM, todas gabaritadas e com resoluções passo-a-passo comentadas e explicadas pela tutora virtual.
+                  Acesse o banco de questões da plataforma com filtros por matéria, dificuldade e histórico de desempenho para revisar com mais foco.
                 </CardDescription>
               </Card>
               

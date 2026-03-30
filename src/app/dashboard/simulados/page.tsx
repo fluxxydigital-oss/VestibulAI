@@ -63,7 +63,7 @@ export default function SimuladosPage() {
              <span className="text-primary italic">Simulados</span> TRI 🏆
           </h1>
           <p className="text-muted-foreground max-w-2xl text-lg">
-            Treine com o motor da IA que simula a nota real do ENEM e vestibulares de elite.
+            Treine com questões reais do banco e acompanhe uma estimativa de desempenho baseada no seu aproveitamento.
           </p>
           
           <div className="absolute top-0 right-0 hidden lg:flex items-center gap-6">
@@ -73,7 +73,7 @@ export default function SimuladosPage() {
             </div>
             <div className="h-10 w-px bg-border"></div>
             <div className="flex flex-col items-center">
-              <span className="text-3xl font-black text-green-500 italic">0{stats.total}</span>
+              <span className="text-3xl font-black text-green-500 italic">{String(stats.total).padStart(2, '0')}</span>
               <span className="text-[10px] font-bold text-muted-foreground uppercase">Realizados</span>
             </div>
           </div>
@@ -90,6 +90,12 @@ export default function SimuladosPage() {
             <div className="grid gap-4">
               {loading ? (
                 <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+              ) : exams.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <PlayCircle className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p className="text-lg font-bold">Nenhum simulado criado ainda.</p>
+                  <p className="text-sm opacity-70 mt-1">Crie um simulado para começar a praticar!</p>
+                </div>
               ) : exams.map((exam) => (
                 <Card key={exam.id} className={cn(
                   "border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/40 transition-all duration-300 group overflow-hidden relative",
@@ -157,16 +163,24 @@ export default function SimuladosPage() {
                  </CardTitle>
                </CardHeader>
                <CardContent className="space-y-4">
-                 <p className="text-sm font-medium leading-relaxed italic text-foreground/80">
-                   "Pela sua evolução, você está pronto para o simulado da <strong className="text-primary">FUVEST</strong>. Foque no controle de tempo; essa prova é mais densa que o ENEM."
-                 </p>
-                 <div className="pt-4 border-t border-border/40 space-y-3">
-                    <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider">
-                      <span className="text-muted-foreground">Estimação TRI atual</span>
-                      <span className="text-primary">740.5</span>
-                    </div>
-                    <Progress value={74} className="h-1.5" />
-                 </div>
+                 {stats.total > 0 ? (
+                   <>
+                     <p className="text-sm font-medium leading-relaxed italic text-foreground/80">
+                       "Sua média TRI atual está em <strong className="text-primary">{stats.avgScore}</strong> pontos. Continue praticando para evolução."
+                     </p>
+                     <div className="pt-4 border-t border-border/40 space-y-3">
+                        <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider">
+                          <span className="text-muted-foreground">Estimação TRI atual</span>
+                          <span className="text-primary">{stats.avgScore}</span>
+                        </div>
+                        <Progress value={Math.min((stats.avgScore / 1000) * 100, 100)} className="h-1.5" />
+                     </div>
+                   </>
+                 ) : (
+                   <p className="text-sm font-medium leading-relaxed italic text-foreground/80">
+                     "Você ainda não realizou nenhum simulado. Complete um simulado para receber mais insights da IA."
+                   </p>
+                 )}
                </CardContent>
             </Card>
 

@@ -65,22 +65,20 @@ export default function DiagnosticoPage() {
     setIsProcessing(true);
     setCurrentStep(totalSteps + 1); // switch to processing view
 
-    // Prepare payload
-    // aggregate basic performance
-    const skills: Record<string, { correct: number, total: number }> = {
-      "Matemática": { correct: 0, total: 1 },
-      "Biologia": { correct: 0, total: 1 },
-      "História": { correct: 0, total: 1 },
-      "Física": { correct: 0, total: 1 },
-      "Português": { correct: 1, total: 1 } // add a fake point so they have a strength if they miss everything
-    };
-
-    questions.forEach(q => {
-      const userAnswer = answers[q.id];
-      if (userAnswer === q.correct) {
-        if (skills[q.subject]) skills[q.subject].correct += 1;
+    // Monta o payload apenas com o desempenho real das respostas do usuário
+    const skills = questions.reduce<Record<string, { correct: number; total: number }>>((acc, q) => {
+      if (!acc[q.subject]) {
+        acc[q.subject] = { correct: 0, total: 0 };
       }
-    });
+
+      acc[q.subject].total += 1;
+
+      if (answers[q.id] === q.correct) {
+        acc[q.subject].correct += 1;
+      }
+
+      return acc;
+    }, {});
 
     try {
       const res = await fetch("/api/diagnostico", {
@@ -91,10 +89,7 @@ export default function DiagnosticoPage() {
       
       const data = await res.json();
       if (data.success) {
-        // give it some dramatization
-        setTimeout(() => {
-          router.push("/dashboard/trilha");
-        }, 3000);
+        router.push("/dashboard/trilha");
       } else {
         setIsProcessing(false);
         setCurrentStep(totalSteps); // back to date

@@ -4,7 +4,6 @@ import {
   successResponse,
 } from "@/lib/api-error";
 import { getPrisma } from "@/lib/prisma";
-import { generateToken } from "@/lib/auth";
 import { z } from "zod";
 
 /**
@@ -16,8 +15,7 @@ const forgotPasswordSchema = z.object({
 
 /**
  * POST /api/auth/forgot-password
- * Initiate password reset process via email
- * Note: In this demo, we log the reset token. In production, send via email.
+ * Registra a solicitação de redefinição de senha sem expor dados sensíveis.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -37,30 +35,10 @@ export async function POST(request: NextRequest) {
       }, 200);
     }
 
-    // ✅ Generate password reset token (expires in 1 hour)
-    const resetToken = generateToken(
-      {
-        userId: user.id,
-        email: user.email,
-      },
-      false // Not a refresh token
-    );
-
-    // ✅ In a real application, send email with reset link
-    // For demo purposes, we'll just log it
-    const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
-    console.log(`[DEMO] Password reset link for ${email}: ${resetLink}`);
-
-    // TODO: Integrate with email service (nodemailer, SendGrid, etc.)
-    // TODO: Save reset token to database with expiration
-
-    // ✅ Return success response
+    // ✅ Mantém resposta neutra por segurança, sem retornar links ou tokens sensíveis
+    // TODO: Integrar com serviço de e-mail e persistência segura do token
     return successResponse({
-      message: "Se o e-mail existir em nosso sistema, um link de recuperação será enviado",
-      // In production, remove this:
-      demo: {
-        resetLink,
-      },
+      message: "Se o e-mail existir em nosso sistema, a solicitação de recuperação foi registrada.",
     }, 200);
   } catch (error) {
     return handleError(error);

@@ -15,7 +15,10 @@ export async function GET(request: NextRequest) {
 
     // Busca todas as matérias
     const subjects = await prisma.subject.findMany({
-      orderBy: { name: 'asc' }
+      orderBy: { name: 'asc' },
+      include: {
+        _count: { select: { questions: true } }
+      }
     });
 
     const progressMap: Record<string, any> = {};
@@ -54,7 +57,7 @@ export async function GET(request: NextRequest) {
         description: s.description,
         area,
         progress: progressPercent,
-        lessons: 120, // Simulando número de aulas disponíveis
+        lessons: s._count?.questions || 0, // Contagem real
         lastActivity: prog.lastActivityAt || null
       };
     });

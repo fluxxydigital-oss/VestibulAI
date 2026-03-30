@@ -31,7 +31,7 @@ export default function ConquistasPage() {
   const xp = user.xp || 0;
   const plan = user.plan || "FREE";
 
-  // Dummy logic rules for achievements
+  // Regras atuais de desbloqueio de conquistas baseadas em XP e plano
   const conquistasIniciante = [
     { id: 1, title: "Primeiro Passo", desc: "Alcançou 100 de XP", icon: "⭐", unlocked: xp >= 100 },
     { id: 2, title: "Aquecimento", desc: "Alcançou 300 de XP", icon: "🔥", unlocked: xp >= 300 },

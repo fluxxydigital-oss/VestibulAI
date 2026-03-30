@@ -80,7 +80,7 @@ export default function RedacaoEditorPage({ params }: { params: Promise<{ id: st
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-5xl font-black text-green-500">{essay.score?.total || 1000} <span className="text-xl text-green-600/50">/ 1000</span></div>
+              <div className="text-5xl font-black text-green-500">{essay.score?.total ?? 0} <span className="text-xl text-green-600/50">/ 1000</span></div>
               <p className="font-medium text-muted-foreground italic">{essay.feedback}</p>
               
               <div className="pt-6 font-medium text-foreground p-6 border rounded-xl bg-background/50 whitespace-pre-wrap">

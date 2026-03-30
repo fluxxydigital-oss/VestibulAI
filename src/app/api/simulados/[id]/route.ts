@@ -18,10 +18,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       throwNotFoundError("Simulado não encontrado");
     }
 
-    // Fetch some real questions from the DB to act as the exam content
-    // Limiting to 5 for the MVP engine
     const questions = await prisma.question.findMany({
-      take: 5,
+      take: 10,
+      orderBy: { createdAt: 'desc' },
       include: {
         subject: { select: { name: true } }
       }
@@ -47,8 +46,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     
     if (!existing || existing.userId !== session.userId) throwNotFoundError();
 
-    // Calculate score (Simulated TRI calculation based on correct answers)
-    // answers is an object like { questionId: "opt-id" }
+    // Estimativa de desempenho com base nas respostas enviadas
     
     let correctCount = 0;
     const allQuestions = await prisma.question.findMany({
@@ -61,9 +59,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     });
 
-    // Score from 0 to 1000
     const score = allQuestions.length > 0 
-      ? Math.round((correctCount / allQuestions.length) * 1000) 
+      ? Math.round(200 + (correctCount / allQuestions.length) * 800)
       : 0;
 
     const exam = await prisma.mockExam.update({
@@ -75,10 +72,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     });
 
-    // Add XP
     await prisma.user.update({
       where: { id: session.userId },
-      data: { xp: { increment: 2500 } }
+      data: { xp: { increment: Math.max(150, correctCount * 60) } }
     });
 
     return successResponse({ exam, correctCount, total: allQuestions.length }, 200);

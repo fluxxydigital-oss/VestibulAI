@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, Star, BrainCircuit, Rocket, Target, Trophy, Loader2, Sparkles, TrendingUp, TrendingDown, RefreshCw, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/hooks";
 
 type Milestone = {
   id: string;
@@ -21,25 +22,30 @@ type Milestone = {
 
 export default function TrilhaPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [progress, setProgress] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
+  const loadTrilha = async () => {
+    try {
+      const res = await fetch('/api/trilha', { cache: 'no-store' });
+      const data = await res.json();
+
+      if (data.success) {
+        setMilestones(data.data.trilha || []);
+        setProgress(data.data.progress || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch trilha", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch('/api/trilha')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setMilestones(data.data.trilha || []);
-          setProgress(data.data.progress || []);
-        }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Failed to fetch trilha", err);
-        setLoading(false);
-      });
+    loadTrilha();
   }, []);
 
   const handleComplete = async (id: string, currentState: string) => {
@@ -56,16 +62,15 @@ export default function TrilhaPage() {
     }
   };
 
-  const handleRegenerar = () => {
+  const handleRegenerar = async () => {
     if (isRegenerating) return;
+
     setIsRegenerating(true);
-    // Simulate AI recalculation delay
-    setTimeout(() => {
-      // Fake refresh effect on array order to make it look recalculated
-      setMilestones(prev => [...prev].reverse());
+    try {
+      await loadTrilha();
+    } finally {
       setIsRegenerating(false);
-      alert("A inteligência artificial recalculou sua trilha com base nos seus pontos fracos mais recentes!");
-    }, 2500);
+    }
   };
 
   return (
@@ -75,7 +80,7 @@ export default function TrilhaPage() {
       <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
         <div className="mb-10 text-center relative z-10">
           <Badge variant="outline" className="mb-3 py-1 px-4 border-primary/30 bg-primary/5 text-primary text-sm font-bold uppercase tracking-wider backdrop-blur-md">
-            Jornada de Medicina
+            {user?.targetCourse ? `Jornada de ${user.targetCourse}` : "Minha Trilha de Estudos"}
           </Badge>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 flex items-center justify-center gap-3">
              <BrainCircuit className="h-10 w-10 text-primary" />
@@ -99,7 +104,7 @@ export default function TrilhaPage() {
                    </div>
                    <div>
                      <h3 className="font-bold text-lg leading-tight">Plano de Estudos Semanal</h3>
-                     <p className="text-xs text-muted-foreground mt-0.5">Módulo de Correções: Fase 1</p>
+                     <p className="text-xs text-muted-foreground mt-0.5">{milestones.length} atividades na trilha</p>
                    </div>
                 </div>
                 
@@ -146,9 +151,12 @@ export default function TrilhaPage() {
                       const isUpcoming = milestone.status === "PENDING" && index > 0 && milestones[index - 1]?.status !== "COMPLETED";
                       const isCurrent = milestone.status === "PENDING" && !isUpcoming;
 
-                      // Fake UI insights tailored for tags
                       const isReview = milestone.title.includes("Revisão");
                       const isTheoretical = milestone.type === "intro";
+                      const weakestEntry = [...progress]
+                        .filter((item) => item.questionsAnswered > 0)
+                        .sort((a, b) => (a.correctAnswers / a.questionsAnswered) - (b.correctAnswers / b.questionsAnswered))[0];
+                      const isWeakPriority = weakestEntry?.subject?.id === milestone.subject.id;
 
                       return (
                         <div key={milestone.id} className="relative flex items-start md:items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
@@ -204,11 +212,15 @@ export default function TrilhaPage() {
                                    {milestone.title}
                                  </h3>
                                  
-                                 {/* AI Recommendation Tag */}
+                                 {/* Recommendation Tag baseada no progresso real */}
                                  {isCurrent && (
                                    <div className="inline-flex items-center gap-1.5 mt-2 bg-purple-500/10 text-purple-600 text-[10px] font-bold px-2 py-1 rounded-sm border border-purple-500/20">
                                       {isReview ? <RefreshCw className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
-                                      {isReview ? "Identificamos fraqueza neste tópico anterior." : "Recomendado para fortalecer a sua base matemática."}
+                                      {isReview
+                                        ? "Revisão programada por baixo aproveitamento recente."
+                                        : isWeakPriority
+                                          ? `Prioridade atual: reforçar ${milestone.subject.name}.`
+                                          : "Etapa liberada conforme seu progresso mais recente."}
                                    </div>
                                  )}
                               </div>
@@ -336,14 +348,14 @@ export default function TrilhaPage() {
               <CardContent className="pt-6">
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    <span className="flex items-center gap-1"><Trophy className="h-3 w-3" /> Meta UFRJ</span>
-                    <span className="text-primary">Trilha: 12%</span>
+                    <span className="flex items-center gap-1"><Trophy className="h-3 w-3" /> Meta: {user?.targetCourse || "Não definida"}</span>
+                    <span className="text-primary">Trilha: {milestones.length > 0 ? Math.round((milestones.filter(m => m.status === 'COMPLETED').length / milestones.length) * 100) : 0}%</span>
                   </div>
                   <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-[12%] rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]"></div>
+                    <div className="h-full bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" style={{ width: `${milestones.length > 0 ? Math.round((milestones.filter(m => m.status === 'COMPLETED').length / milestones.length) * 100) : 0}%` }}></div>
                   </div>
                   <p className="text-[10px] text-muted-foreground mt-1 leading-snug">
-                     A IA estima que completando todas essas lições, sua taxa teórica exigida para a UFRJ passará para 35%. Continue firme!
+                     Complete as atividades da trilha para aumentar seu progresso. Continue firme!
                   </p>
                 </div>
               </CardContent>

@@ -83,7 +83,7 @@ export default function QuestionsPage() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-  // Timer simulation
+  // Timer de resposta por questão
   useEffect(() => {
     if (timeLeft > 0 && !isConfirmed) {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
@@ -323,8 +323,8 @@ export default function QuestionsPage() {
                 <Timer className={cn("h-4 w-4", timeLeft < 30 ? "text-destructive animate-pulse" : "text-primary")} />
                 <span className="text-sm font-mono font-bold leading-none">{formatTime(timeLeft)}</span>
              </div>
-             <Badge variant="outline" className="hidden sm:flex gap-1.5 border-orange-500/20 bg-orange-500/5 text-orange-500 font-bold">
-                <Flame className="h-3.5 w-3.5" /> 14
+             <Badge variant="outline" className="hidden sm:flex gap-1.5 border-primary/20 bg-primary/5 text-primary font-bold">
+                <Flame className="h-3.5 w-3.5" /> Desafio
              </Badge>
           </div>
         </div>

@@ -106,7 +106,7 @@ export default function RedacaoPage() {
                            <div className="w-full sm:w-auto text-right">
                              {essay.status === "GRADED" ? (
                                 <div className="p-3 bg-green-500/5 border border-green-500/20 rounded-xl inline-flex flex-col items-center min-w-[100px]">
-                                  <span className="text-2xl font-black text-green-500 italic leading-none">{essay.score?.total || 1000}</span>
+                                  <span className="text-2xl font-black text-green-500 italic leading-none">{essay.score?.total ?? "—"}</span>
                                   <span className="text-[9px] font-black uppercase text-green-600/70 mt-1">Sua Nota</span>
                                 </div>
                              ) : (
@@ -175,36 +175,56 @@ export default function RedacaoPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                <div className="space-y-4">
-                  {[
-                    { label: "Domínio da Norma Culta", score: 85, color: "bg-blue-500" },
-                    { label: "Compreensão do Tema", score: 95, color: "bg-emerald-500" },
-                    { label: "Organização de Argumentos", score: 70, color: "bg-orange-500" },
-                    { label: "Conhecimento de Repertório", score: 60, color: "bg-purple-500" }
-                  ].map((crit, i) => (
-                    <div key={i} className="space-y-1.5">
-                      <div className="flex justify-between text-[11px] font-black uppercase tracking-wider">
-                        <span className="text-muted-foreground">{crit.label}</span>
-                        <span className="text-foreground">{crit.score}%</span>
+                {(() => {
+                  const gradedEssay = essays.find((e: any) => e.status === 'GRADED' && e.score);
+                  if (!gradedEssay) {
+                    return (
+                      <div className="text-center py-4 text-muted-foreground">
+                        <PenTool className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                        <p className="text-sm font-medium">Nenhuma redação corrigida ainda.</p>
+                        <p className="text-xs opacity-70 mt-1">Escreva e envie uma redação para ver a análise aqui.</p>
                       </div>
-                      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className={cn("h-full rounded-full transition-all duration-1000 ease-in-out", crit.color)}
-                          style={{ width: `${crit.score}%` }}
-                        ></div>
+                    );
+                  }
+                  const score = gradedEssay.score as any;
+                  const criteria = [
+                    { label: "Domínio da Norma Culta", score: score?.c1 || 0, percentage: Math.round((score?.c1 || 0) / 2), color: "bg-blue-500" },
+                    { label: "Compreensão do Tema", score: score?.c2 || 0, percentage: Math.round((score?.c2 || 0) / 2), color: "bg-emerald-500" },
+                    { label: "Organização de Argumentos", score: score?.c3 || 0, percentage: Math.round((score?.c3 || 0) / 2), color: "bg-orange-500" },
+                    { label: "Coesão e articulação", score: score?.c4 || 0, percentage: Math.round((score?.c4 || 0) / 2), color: "bg-purple-500" },
+                    { label: "Proposta de intervenção", score: score?.c5 || 0, percentage: Math.round((score?.c5 || 0) / 2), color: "bg-pink-500" }
+                  ];
+                  return (
+                    <>
+                      <div className="space-y-4">
+                        {criteria.map((crit, i) => (
+                          <div key={i} className="space-y-1.5">
+                            <div className="flex justify-between text-[11px] font-black uppercase tracking-wider">
+                              <span className="text-muted-foreground">{crit.label}</span>
+                              <span className="text-foreground">{crit.score}/200</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className={cn("h-full rounded-full transition-all duration-1000 ease-in-out", crit.color)}
+                                style={{ width: `${crit.percentage}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-3">
-                  <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase italic">
-                    <MessageSquareQuote className="h-4 w-4" /> Insight da Redação Anterior
-                  </div>
-                  <p className="text-xs text-foreground/80 leading-relaxed italic font-medium">
-                    "Você demonstrou excelente repertório sociocultural, mas sua <strong className="text-primary">proposta de intervenção</strong> precisa detalhar mais o papel do agente público."
-                  </p>
-                </div>
+                      {gradedEssay.feedback && (
+                        <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-3">
+                          <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase italic">
+                            <MessageSquareQuote className="h-4 w-4" /> Insight da Redação Anterior
+                          </div>
+                          <p className="text-xs text-foreground/80 leading-relaxed italic font-medium">
+                            {gradedEssay.feedback}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
 
@@ -215,7 +235,12 @@ export default function RedacaoPage() {
                 </div>
                 <div>
                    <h4 className="text-sm font-bold uppercase tracking-tight">Status da Evolução</h4>
-                   <p className="text-xs text-muted-foreground font-medium">Sua nota subiu <span className="text-green-500 font-bold">+80 pontos</span> este mês!</p>
+                   <p className="text-xs text-muted-foreground font-medium">
+                     {essays.filter((e: any) => e.status === 'GRADED').length > 0 
+                       ? <>Você já tem <span className="text-green-500 font-bold">{essays.filter((e: any) => e.status === 'GRADED').length}</span> redações corrigidas!</>
+                       : "Envie sua primeira redação para começar a evolução."
+                     }
+                   </p>
                 </div>
               </CardContent>
             </Card>

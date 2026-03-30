@@ -3,12 +3,18 @@ import { getPrisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { handleError, successResponse, throwAuthenticationError } from "@/lib/api-error";
 
-const PREDEFINED_THEMES = [
-  { id: "theme-1", title: "Inteligência Artificial na Educação do Século XXI", tag: "Tecnologia", xp: 1500, deadline: "Hoje" },
-  { id: "theme-2", title: "Os desafios da saúde mental entre jovens brasileiros", tag: "Sociedade", xp: 1200, deadline: "2 dias" },
-  { id: "theme-3", title: "Segurança alimentar e a crise hídrica", tag: "Meio Ambiente", xp: 1800, deadline: "Finalizada" },
-  { id: "theme-4", title: "A importância do voto consciente para a democracia", tag: "Política", xp: 1100, deadline: "5 dias" }
+const CURATED_THEMES = [
+  { id: "theme-1", title: "Caminhos para ampliar o cuidado com a saúde mental de jovens no Brasil", tag: "Sociedade", xp: 900 },
+  { id: "theme-2", title: "Desafios para o uso ético da inteligência artificial na educação", tag: "Tecnologia", xp: 950 },
+  { id: "theme-3", title: "Segurança alimentar e os impactos das mudanças climáticas", tag: "Meio Ambiente", xp: 1000 },
+  { id: "theme-4", title: "Participação cidadã e fortalecimento da democracia brasileira", tag: "Política", xp: 920 }
 ];
+
+function formatSuggestionWindow(offset: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + offset);
+  return `até ${date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,9 +28,14 @@ export async function GET(request: NextRequest) {
       orderBy: { updatedAt: 'desc' }
     });
 
+    const suggestions = CURATED_THEMES.map((theme, index) => ({
+      ...theme,
+      deadline: formatSuggestionWindow((index + 1) * 2),
+    }));
+
     return successResponse({ 
       essays,
-      suggestions: PREDEFINED_THEMES 
+      suggestions
     }, 200);
   } catch (error) {
     return handleError(error);

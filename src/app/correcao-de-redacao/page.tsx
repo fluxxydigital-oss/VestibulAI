@@ -19,13 +19,13 @@ export default function CorrecaoDeRedacao() {
         </div>
 
         <section className="mb-16 text-center">
-          <Badge className="mb-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20">Correção Instantânea</Badge>
+          <Badge className="mb-4 bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20">Correção Automatizada</Badge>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
             Correção de Redação <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Guiada por IA</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Não espere dias para receber sua nota. Envie sua redação e receba uma correção detalhada, baseada nas competências oficiais do ENEM, FUVEST, UNICAMP e outras bancas, em menos de 10 segundos.
+            Envie sua redação e receba uma análise automatizada inspirada nas competências cobradas nos principais vestibulares, com feedback prático para revisão.
           </p>
         </section>
 
@@ -40,8 +40,8 @@ export default function CorrecaoDeRedacao() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Nota Final Estimada</h3>
-                  <p className="text-sm text-muted-foreground">Banca: ENEM (Modelo Oficial)</p>
+                  <h3 className="text-xl font-bold">Exemplo de relatório</h3>
+                  <p className="text-sm text-muted-foreground">Referência de análise inspirada nos critérios do ENEM</p>
                 </div>
               </div>
               
@@ -75,7 +75,7 @@ export default function CorrecaoDeRedacao() {
                 <h3 className="text-2xl font-bold">Como a IA avalia seu texto?</h3>
               </div>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                Nosso modelo de Inteligência Artificial foi treinado com milhares de redações oficiais nota 1000 e com os manuais de correção dos próprios avaliadores.
+                A análise combina critérios estruturais de redação, organização argumentativa, coesão textual e presença de proposta de intervenção.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">

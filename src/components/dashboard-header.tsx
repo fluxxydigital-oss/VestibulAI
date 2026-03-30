@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { BrainCircuit, User, CreditCard, Settings, LifeBuoy, Menu, X } from "lucide-react";
 import Link from "next/link";
@@ -39,11 +39,6 @@ export function DashboardHeader() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleNavClick = (href: string) => {
     setMobileMenuOpen(false);
@@ -91,17 +86,19 @@ export function DashboardHeader() {
           <div className="flex items-center gap-2">
             <PWAInstallButton />
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-xs font-bold text-primary">Nível 12</span>
-              <span className="text-[10px] text-muted-foreground">350/500 XP</span>
+              <span className="text-xs font-bold text-primary">Nível {user?.xp ? Math.floor(user.xp / 100) + 1 : 1}</span>
+              <span className="text-[10px] text-muted-foreground">{(user?.xp || 0) % 100}/{100} XP</span>
             </div>
             
             <DropdownMenu>
               <DropdownMenuTrigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary ring-offset-2">
                 <Avatar className="h-11 w-11 border-2 border-primary/20 hover:border-primary transition-colors cursor-pointer shadow-sm relative group">
-                  <AvatarImage src={user?.image || undefined} alt="User" />
-                  <AvatarFallback className="font-bold bg-primary/10 text-primary text-lg">JS</AvatarFallback>
+                  <AvatarImage src={user?.image || undefined} alt={user?.name || "Usuário"} />
+                  <AvatarFallback className="font-bold bg-primary/10 text-primary text-lg">
+                    {user?.name ? user.name.substring(0, 2).toUpperCase() : "US"}
+                  </AvatarFallback>
                   <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-2 ring-background z-10">
-                    12
+                    {user?.xp ? Math.floor(user.xp / 100) + 1 : 1}
                   </span>
                 </Avatar>
               </DropdownMenuTrigger>
@@ -113,9 +110,9 @@ export function DashboardHeader() {
                 <DropdownMenuGroup>
                   <DropdownMenuLabel className="p-3 font-normal">
                     <div className="flex flex-col space-y-1.5">
-                      <p className="text-sm font-bold leading-none">Joana Silva</p>
+                      <p className="text-sm font-bold leading-none">{user?.name || "Usuário"}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        joana.silva@email.com
+                        {user?.email || "Sem email"}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -163,7 +160,7 @@ export function DashboardHeader() {
         </div>
       </header>
 
-      {mobileMenuOpen && mounted && createPortal(
+      {mobileMenuOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-border/40 bg-background/50">
             <span className="text-lg font-bold ml-2">Menu Principal</span>

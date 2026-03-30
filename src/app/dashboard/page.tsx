@@ -41,6 +41,7 @@ export default function DashboardPage() {
   
   // Trilha State
   const [todayMissions, setTodayMissions] = useState<StudyPlan[]>([]);
+  const [userProgress, setUserProgress] = useState<any[]>([]);
   const [loadingMissions, setLoadingMissions] = useState(true);
 
   // Timer State
@@ -63,6 +64,7 @@ export default function DashboardPage() {
              return mDate === today;
           });
           setTodayMissions(todays);
+          setUserProgress(data.data?.progress || []);
         }
       } catch (err) {
         console.error("Failed to load missions", err);
@@ -155,7 +157,7 @@ export default function DashboardPage() {
             <p className="text-muted-foreground">De volta aos estudos! Continue sua trilha de preparação para o ENEM.</p>
             <div className="flex items-center gap-3 mt-4">
               <Badge variant="secondary" className="bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 px-3 py-1 flex items-center gap-1.5 cursor-default">
-                <Flame className="h-4 w-4" /> 14 dias de Ofensiva
+                <Flame className="h-4 w-4" /> Nível {(user?.xp ? Math.floor(user.xp / 100) + 1 : 1)} Ativo
               </Badge>
               <div className="flex items-center gap-2 text-sm text-foreground/80 font-medium bg-muted/50 px-3 py-1.5 rounded-full border">
                 <Target className="h-4 w-4 text-primary" />
@@ -184,7 +186,11 @@ export default function DashboardPage() {
              <CardContent>
                <div className="text-2xl font-bold">{user?.xp || 0} <span className="text-sm font-normal text-muted-foreground">/ {(Math.floor((user?.xp || 0) / 100) + 1) * 100} para Nvl {Math.floor((user?.xp || 0) / 100) + 2}</span></div>
                <Progress value={((user?.xp || 0) % 100)} className="mt-3 h-2" />
-               <p className="text-xs text-muted-foreground mt-2">+0 XP ganhos hoje</p>
+               <p className="text-xs text-muted-foreground mt-2">
+                 {todayMissions.filter((m: any) => m.status === 'COMPLETED').length > 0
+                   ? `${todayMissions.filter((m: any) => m.status === 'COMPLETED').length} missão(ões) concluída(s) hoje`
+                   : "Seu XP aumenta conforme você conclui aulas, simulados e redações"}
+               </p>
              </CardContent>
            </Card>
 
@@ -195,12 +201,12 @@ export default function DashboardPage() {
              </CardHeader>
              <CardContent>
                <div className="flex items-end gap-2">
-                 <div className="text-2xl font-bold">0</div>
-                 <span className="text-sm text-muted-foreground pb-1">/ 30 meta</span>
+                 <div className="text-2xl font-bold">{todayMissions.filter((m: any) => m.status === 'COMPLETED').length}</div>
+                 <span className="text-sm text-muted-foreground pb-1">/ {todayMissions.length || 1} missões hoje</span>
                </div>
-               <Progress value={0} className="mt-3 h-2 bg-muted [&_[data-slot=progress-indicator]]:bg-green-500" />
+               <Progress value={todayMissions.length ? (todayMissions.filter((m: any) => m.status === 'COMPLETED').length / todayMissions.length) * 100 : 0} className="mt-3 h-2 bg-green-500/20 [&_[data-slot=progress-indicator]]:bg-green-500" />
                <p className="text-xs text-muted-foreground mt-2 font-medium">
-                 <span className="text-muted-foreground">0% de Acerto</span> (Sem dados)
+                 {todayMissions.length === 0 ? "Nenhuma missão diária." : "Continue assim!"}
                </p>
              </CardContent>
            </Card>
@@ -242,12 +248,13 @@ export default function DashboardPage() {
                <TrendingUp className="h-4 w-4 text-purple-500" />
              </CardHeader>
              <CardContent>
-               <div className="text-2xl font-bold">Iniciante</div>
-               <p className="text-xs text-muted-foreground mt-1 mb-2">Sem simulados recentes</p>
+               <div className="text-2xl font-bold">{(user?.xp || 0) < 500 ? "Iniciante" : (user?.xp || 0) < 1500 ? "Intermediário" : "Avançado"}</div>
+               <p className="text-xs text-muted-foreground mt-1 mb-2">Baseado em XP</p>
                <div className="flex gap-1 mt-2">
-                 {[1,2,3,4,5,6,7].map((day, i) => (
-                   <div key={i} className={`h-6 w-full rounded-sm bg-muted`} title={`Dia ${day}`}></div>
+                 {userProgress.slice(0, 7).map((p, i) => (
+                   <div key={i} className={`h-6 w-full rounded-sm ${p.estimatedLevel > 3 ? 'bg-primary' : 'bg-primary/20'}`} title={`${p.subject?.name || 'Matéria'}`}></div>
                  ))}
+                 {userProgress.length === 0 && <div className="h-6 w-full rounded-sm bg-muted text-[10px] flex items-center justify-center text-muted-foreground font-medium">Sem dados</div>}
                </div>
              </CardContent>
            </Card>
@@ -349,30 +356,34 @@ export default function DashboardPage() {
                 <CardDescription>Onde focar para ganhar mais pontos.</CardDescription>
               </CardHeader>
               <CardContent className="pt-4 space-y-5">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-semibold text-destructive flex items-center gap-1.5"><AlertCircle className="h-4 w-4" /> Física: Cinemática</span>
-                    <span className="font-bold text-muted-foreground">32% acerto</span>
+                {userProgress.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground">
+                     <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                     <p className="text-sm">Sem dados suficientes.</p>
+                     <p className="text-xs opacity-70 mt-1">Complete missões e simulados.</p>
                   </div>
-                  <Progress value={32} className="h-2 [&_[data-slot=progress-indicator]]:bg-destructive" />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-semibold text-orange-500 flex items-center gap-1.5"><Target className="h-4 w-4" /> Química: Orgânica</span>
-                    <span className="font-bold text-muted-foreground">55% acerto</span>
-                  </div>
-                  <Progress value={55} className="h-2 [&_[data-slot=progress-indicator]]:bg-orange-500" />
-                </div>
+                ) : (
+                  <>
+                  {userProgress.slice(0, 2).map((p, i) => (
+                    <div key={p.id || i} className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className={`font-semibold flex items-center gap-1.5 ${i === 0 ? 'text-destructive' : 'text-orange-500'}`}><AlertCircle className="h-4 w-4" /> {p.subject?.name || 'Matéria'}</span>
+                        <span className="font-bold text-muted-foreground">{Math.round((p.estimatedLevel / 5) * 100)}% proficiência</span>
+                      </div>
+                      <Progress value={(p.estimatedLevel / 5) * 100} className={`h-2 [&_[data-slot=progress-indicator]]:${i === 0 ? 'bg-destructive' : 'bg-orange-500'}`} />
+                    </div>
+                  ))}
 
-                <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-border/50">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    <strong className="text-foreground">Insight:</strong> Você tem perdido questões repetidas de MRUV. Reveja a equação de Torricelli.
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full mt-3 text-xs h-8" onClick={handleAIGenerate}>
-                    Gerar Trilha de Reforço (Apenas Premium)
-                  </Button>
-                </div>
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-border/50">
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      <strong className="text-foreground">Insight:</strong> Focar nas matérias listadas acima aumentará significativamente sua nota TRI.
+                    </p>
+                    <Button variant="outline" size="sm" className="w-full mt-3 text-xs h-8" onClick={handleAIGenerate}>
+                      Gerar Trilha de Reforço (Apenas Premium)
+                    </Button>
+                  </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
